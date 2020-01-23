@@ -46,11 +46,11 @@ impl<'a> Iterator for RLE<'a> {
                         self.count = 1;
                     }
                     match c {
-                        b'o' => {
+                        b'o' | b'A' => {
                             self.alive_count = mem::take(&mut self.count);
                             return Some(Ok((self.y, self.x)));
                         }
-                        b'b' => self.x += self.count,
+                        b'b' | b'.' => self.x += self.count,
                         b'$' => {
                             self.x = 0;
                             self.y += self.count
