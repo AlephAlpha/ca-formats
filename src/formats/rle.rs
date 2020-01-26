@@ -14,9 +14,9 @@ pub struct RLE<'a> {
 }
 
 impl RLE<'_> {
-    pub fn new(rle: &str) -> RLE {
+    pub fn new(text: &str) -> RLE {
         RLE {
-            lines: rle.lines(),
+            lines: text.lines(),
             current_line: "".bytes(),
             x: 0,
             y: 0,

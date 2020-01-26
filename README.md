@@ -24,10 +24,10 @@ assert_eq!(glider, vec![(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]);
 
 - [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 - [PlainText](https://www.conwaylife.com/wiki/Plaintext)
+- [apgcode](https://www.conwaylife.com/wiki/Apgcode)
 
 待支持的格式：
 
-- [ ] [apgcode](https://www.conwaylife.com/wiki/Apgcode)
 - [ ] [Macrocell](https://www.conwaylife.com/wiki/Macrocell)
 
 别的格式用的人不多，懒得管了。

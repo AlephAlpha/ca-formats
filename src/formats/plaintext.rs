@@ -9,9 +9,9 @@ pub struct Plaintext<'a> {
 }
 
 impl Plaintext<'_> {
-    pub fn new(rle: &str) -> Plaintext {
+    pub fn new(text: &str) -> Plaintext {
         Plaintext {
-            lines: rle.lines(),
+            lines: text.lines(),
             current_line: "".bytes(),
             x: -1,
             y: -1,
