@@ -1,6 +1,25 @@
+//! A parser for [apgcode](https://www.conwaylife.com/wiki/Apgcode) format.
+//!
+//! Rules with more than 2 states are not supported.
+//!
+//! Patterns that are not encodable in extended Wechsler format are not supported.
+//!
+//! # Example
+//!
+//! ```rust
+//! use ca_formats::apgcode::ApgCode;
+//!
+//! const GLIDER: &str = "xq4_153";
+//! let mut glider = ApgCode::new(GLIDER).unwrap().collect::<Result<Vec<_>, _>>().unwrap();
+//! assert_eq!(glider, vec![(0, 0), (1, 0), (1, 2), (2, 0), (2, 1)]);
+//! ```
+//!
+
 use crate::Error;
 use std::str::Bytes;
 
+/// An iterator of coordinates of living cells. Returns by parsing an
+/// [apgcode](https://www.conwaylife.com/wiki/Apgcode).
 pub struct ApgCode<'a> {
     /// Extended Wechsler format
     ewf: Bytes<'a>,
@@ -11,6 +30,10 @@ pub struct ApgCode<'a> {
 }
 
 impl ApgCode<'_> {
+    /// Creates a new iterator from a string.
+    ///
+    /// Returns `Err` if the apgcode is not encoded in extended Wechsler format,
+    /// e.g., periodic linearly growing objects, oversized objects, etc.
     pub fn new(text: &str) -> Result<ApgCode, Error> {
         let mut split = text.split('_');
         let prefix = split.next().ok_or(Error::Unencodable)?;

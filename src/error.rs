@@ -1,3 +1,5 @@
+//! Errors that can be returned when parsing a pattern file.
+
 use std::{
     error,
     fmt::{self, Display, Formatter},

@@ -1,6 +1,27 @@
+//! A parser for [PlainText](https://www.conwaylife.com/wiki/Plaintext) format.
+//!
+//! # Example
+//!
+//! ```rust
+//! use ca_formats::plaintext::Plaintext;
+//!
+//! const GLIDER: &str = r"!Name: Glider
+//! !Author: Richard K. Guy
+//! !The smallest, most common, and first discovered spaceship.
+//! !www.conwaylife.com/wiki/index.php?title=Glider
+//! .O
+//! ..O
+//! OOO";
+//! let mut glider = Plaintext::new(GLIDER).collect::<Result<Vec<_>, _>>().unwrap();
+//! assert_eq!(glider, vec![(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]);
+//! ```
+//!
+
 use crate::Error;
 use std::str::{Bytes, Lines};
 
+/// An iterator of coordinates of living cells. Returns by parsing a
+/// [PlainText](https://www.conwaylife.com/wiki/Plaintext) file.
 pub struct Plaintext<'a> {
     lines: Lines<'a>,
     current_line: Bytes<'a>,
@@ -9,6 +30,7 @@ pub struct Plaintext<'a> {
 }
 
 impl Plaintext<'_> {
+    /// Creates a new iterator from a string.
     pub fn new(text: &str) -> Plaintext {
         Plaintext {
             lines: text.lines(),

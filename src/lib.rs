@@ -1,8 +1,19 @@
 //! Parsing pattern files for Conway's Game of Life.
 //!
-//! The parsers reads a string and returns an iterator of coordinates of living cells.
+//! The parsers read a string and return an iterator of coordinates of living cells.
 //!
-//! # Example:
+//! Parsing is lazy. If there is something wrong in the file, it will not be detected
+//! immediately.
+//!
+//! Rules with more than 2 states are not supported.
+//!
+//! # Supported formats
+//!
+//! - [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
+//! - [PlainText](https://www.conwaylife.com/wiki/Plaintext)
+//! - [apgcode](https://www.conwaylife.com/wiki/Apgcode)
+//!
+//! # Example
 //!
 //! ```rust
 //! use ca_formats::rle::RLE;
@@ -17,6 +28,14 @@
 //! glider.sort();
 //! assert_eq!(glider, vec![(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]);
 //! ```
+//!
+//! # See also
+//!
+//! - [ca-rules](https://crates.io/crates/ca-rules) - A parser for rule strings.
+//! - [game-of-life-parsers](https://crates.io/crates/game-of-life-parsers)
+//!     by René Perschon - Parsers for [Life 1.05](https://www.conwaylife.com/wiki/Life_1.05)
+//!     and [Life 1.06](https://www.conwaylife.com/wiki/Life_1.06) formats.
+//!
 
 mod error;
 mod formats;
