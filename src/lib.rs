@@ -10,7 +10,7 @@
 //! # Supported formats
 //!
 //! - [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
-//! - [PlainText](https://www.conwaylife.com/wiki/Plaintext)
+//! - [Plaintext](https://www.conwaylife.com/wiki/Plaintext)
 //! - [apgcode](https://www.conwaylife.com/wiki/Apgcode)
 //!
 //! # Example
