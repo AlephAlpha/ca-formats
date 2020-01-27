@@ -42,6 +42,7 @@ impl Plaintext<'_> {
 }
 
 impl<'a> Iterator for Plaintext<'a> {
+    /// Coordinates of a living cell, or an error in the pattern string.
     type Item = Result<(i32, i32), Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
