@@ -1,6 +1,6 @@
 [package]
 name = "ca-formats"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["AlephAlpha <alephalpha911@gmail.com>"]
 edition = "2018"
 description = "Parsing pattern files for Conway's Game of Life."
@@ -11,3 +11,4 @@ readme = "README_en.md"
 keywords = ["game-of-life", "cellular-automata", "parser"]
 
 [dependencies]
+thiserror = "1.0.18"
