@@ -1,5 +1,7 @@
 //! A parser for [PlainText](https://www.conwaylife.com/wiki/Plaintext) format.
 //!
+//! Rules with more than 2 states are not supported.
+//!
 //! # Example
 //!
 //! ```rust
@@ -22,6 +24,7 @@ use std::str::{Bytes, Lines};
 
 /// An iterator of coordinates of living cells. Returns by parsing a
 /// [PlainText](https://www.conwaylife.com/wiki/Plaintext) file.
+#[derive(Clone)]
 pub struct Plaintext<'a> {
     lines: Lines<'a>,
     current_line: Bytes<'a>,

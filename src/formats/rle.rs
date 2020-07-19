@@ -26,6 +26,7 @@ use std::{
 
 /// An iterator of coordinates of living cells. Returns by parsing an
 /// [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded) file.
+#[derive(Clone)]
 pub struct RLE<'a> {
     lines: Lines<'a>,
     current_line: Bytes<'a>,

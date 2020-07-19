@@ -20,6 +20,7 @@ use std::str::Bytes;
 
 /// An iterator of coordinates of living cells. Returns by parsing an
 /// [apgcode](https://www.conwaylife.com/wiki/Apgcode).
+#[derive(Clone)]
 pub struct ApgCode<'a> {
     /// Extended Wechsler format
     ewf: Bytes<'a>,
