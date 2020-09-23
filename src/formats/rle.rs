@@ -66,16 +66,16 @@ impl<'a> Iterator for RLE<'a> {
             if let Some(c) = self.current_line.next() {
                 if c.is_ascii_digit() {
                     self.count = 10 * self.count + (c - b'0') as i32
-                } else {
+                } else if !c.is_ascii_whitespace() {
                     if self.count == 0 {
                         self.count = 1;
                     }
                     match c {
-                        b'o' | b'A' => {
+                        b'b' | b'.' => self.x += self.count,
+                        _ if c.is_ascii_alphabetic() => {
                             self.alive_count = mem::take(&mut self.count);
                             return Some(Ok((self.y, self.x)));
                         }
-                        b'b' | b'.' => self.x += self.count,
                         b'$' => {
                             self.x = 0;
                             self.y += self.count
@@ -86,7 +86,7 @@ impl<'a> Iterator for RLE<'a> {
                     self.count = 0;
                 }
             } else if let Some(l) = self.lines.next() {
-                if l.starts_with('#') | l.starts_with('x') {
+                if l.starts_with('#') | l.starts_with("x ") | l.starts_with("x=") {
                     continue;
                 } else {
                     self.current_line = l.bytes();

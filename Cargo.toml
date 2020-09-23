@@ -11,4 +11,4 @@ readme = "README_en.md"
 keywords = ["game-of-life", "cellular-automata", "parser"]
 
 [dependencies]
-thiserror = "1.0.18"
+thiserror = "1.0.20"

@@ -1,6 +1,6 @@
 # CA formats parsers
 
-[![Travis (.org)](https://img.shields.io/travis/AlephAlpha/ca-formats)](https://travis-ci.org/AlephAlpha/ca-formats) [![Crates.io](https://img.shields.io/crates/v/ca-formats)](https://crates.io/crates/ca-formats) [![Docs.rs](https://docs.rs/ca-formats/badge.svg)](https://docs.rs/ca-formats/) [![English](https://img.shields.io/badge/readme-English-brightgreen)](README_en.md)
+[![Travis (.com)](https://img.shields.io/travis/com/AlephAlpha/ca-formats))](https://travis-ci.com/AlephAlpha/ca-formats) [![Crates.io](https://img.shields.io/crates/v/ca-formats)](https://crates.io/crates/ca-formats) [![Docs.rs](https://docs.rs/ca-formats/badge.svg)](https://docs.rs/ca-formats/) [![English](https://img.shields.io/badge/readme-English-brightgreen)](README_en.md)
 
 读取生命游戏的图样文件。返回一个活细胞坐标的 Iterator。
 

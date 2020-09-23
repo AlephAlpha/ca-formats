@@ -2,8 +2,7 @@
 //!
 //! The parsers read a string and return an iterator of coordinates of living cells.
 //!
-//! Parsing is lazy. If there is something wrong in the file, it will not be detected
-//! immediately.
+//! Parsing is lazy. If there is something wrong in the file, it will not be detected immediately.
 //!
 //! Rules with more than 2 states are not supported.
 //!
