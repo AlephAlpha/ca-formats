@@ -52,11 +52,12 @@ impl<'a> Iterator for Plaintext<'a> {
         loop {
             if let Some(c) = self.current_line.next() {
                 match c {
-                    b'O' => {
+                    b'O' | b'*' => {
                         self.x += 1;
                         return Some(Ok((self.y, self.x)));
                     }
                     b'.' => self.x += 1,
+                    _ if c.is_ascii_whitespace() => continue,
                     _ => return Some(Err(Error::UnexpectedByte(c))),
                 }
             } else if let Some(l) = self.lines.next() {
