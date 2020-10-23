@@ -2,26 +2,20 @@
 
 [![Travis (.com)](https://img.shields.io/travis/com/AlephAlpha/ca-formats)](https://travis-ci.com/AlephAlpha/ca-formats) [![Crates.io](https://img.shields.io/crates/v/ca-formats)](https://crates.io/crates/ca-formats) [![Docs.rs](https://docs.rs/ca-formats/badge.svg)](https://docs.rs/ca-formats/) [![English](https://img.shields.io/badge/readme-English-brightgreen)](README_en.md)
 
-读取生命游戏的图样文件。返回一个活细胞坐标的 Iterator。
+读取生命游戏的图样文件，返回一个活细胞坐标的 Iterator。
 
 正在重写中。重写之后将不再兼容以前的版本。
-
-<!--
-
-Parsing 是 Lazy 的。如果文件有错，它不会马上发现。
-
-只适用于两种状态的规则。
 
 ## 支持的格式
 
 - [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 - [Plaintext](https://www.conwaylife.com/wiki/Plaintext)
-- [apgcode](https://www.conwaylife.com/wiki/Apgcode)
+<!-- - [apgcode](https://www.conwaylife.com/wiki/Apgcode) -->
 
 ## 用法
 
 ```rust
-use ca_formats::rle::RLE;
+use ca_formats::rle::Rle;
 
 const GLIDER: &str = r"#N Glider
 #O Richard K. Guy
@@ -29,12 +23,18 @@ const GLIDER: &str = r"#N Glider
 #C www.conwaylife.com/wiki/index.php?title=Glider
 x = 3, y = 3, rule = B3/S23
 bob$2bo$3o!";
-let mut glider = RLE::new(GLIDER).collect::<Result<Vec<_>, _>>().unwrap();
-glider.sort();
-assert_eq!(glider, vec![(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]);
-```
 
--->
+let mut glider = Rle::new(GLIDER).unwrap();
+assert_eq!(glider.header_data().unwrap().x, 3);
+assert_eq!(glider.header_data().unwrap().y, 3);
+assert_eq!(glider.header_data().unwrap().rule, Some(String::from("B3/S23")));
+
+let cells = glider
+    .cells()
+    .map(|cell| cell.unwrap().position)
+    .collect::<Vec<_>>();
+assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
+```
 
 ## 另见
 

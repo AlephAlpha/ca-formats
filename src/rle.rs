@@ -3,12 +3,11 @@
 //! It is basically the same as the original [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 //! format, except that it supports up to 256 states, and a `#CXRLE` line.
 
+use crate::{CellData, Coordinates};
 use lazy_static::lazy_static;
 use regex::Regex;
 use std::str::{Bytes, Lines};
 use thiserror::Error;
-
-pub type Coordinates = (i64, i64);
 
 /// Errors that can be returned when parsing a RLE file.
 #[derive(Clone, Debug, Eq, Error, PartialEq)]
@@ -84,7 +83,7 @@ fn parse_header(line: &str) -> Option<HeaderData> {
 /// # Example
 ///
 /// ```rust
-/// use ca_formats::rle::Rle;
+/// # use ca_formats::rle::Rle;
 ///
 /// const GLIDER: &str = r"#N Glider
 /// #O Richard K. Guy
@@ -142,35 +141,40 @@ impl<'a> Rle<'a> {
     ///
     /// If there are multiple header lines / `CXRLE` lines, only the last one will be taken.
     pub fn new(string: &'a str) -> Result<Self, Error> {
-        let mut rle = Rle {
-            cxrle_data: None,
-            header_data: None,
-            lines: string.lines(),
-            current_line: "".bytes(),
-            position: (0, 0),
-            x_start: 0,
+        let mut lines = string.lines();
+        let mut cxrle_data = None;
+        let mut header_data = None;
+        let mut current_line = "".bytes();
+        let mut position = (0, 0);
+        let mut x_start = 0;
+        while let Some(line) = lines.next() {
+            if line.starts_with("#CXRLE") {
+                cxrle_data
+                    .replace(parse_cxrle(line).ok_or(Error::InvalidCXRLELine(line.to_string()))?);
+            } else if line.starts_with("x ") || line.starts_with("x=") {
+                header_data
+                    .replace(parse_header(line).ok_or(Error::InvalidHeaderLine(line.to_string()))?);
+            } else if !line.starts_with('#') {
+                current_line = line.bytes();
+                break;
+            }
+        }
+        if let Some(CxrleData { pos: Some(pos), .. }) = cxrle_data {
+            position = pos;
+            x_start = pos.0;
+        }
+        Ok(Rle {
+            cxrle_data,
+            header_data,
+            lines,
+            current_line,
+            position,
+            x_start,
             run_count: 0,
             alive_count: 0,
             state: 1,
             state_prefix: None,
-        };
-        while let Some(line) = rle.lines.next() {
-            if line.starts_with("#CXRLE") {
-                rle.cxrle_data
-                    .replace(parse_cxrle(line).ok_or(Error::InvalidCXRLELine(line.to_string()))?);
-            } else if line.starts_with("x ") || line.starts_with("x=") {
-                rle.header_data
-                    .replace(parse_header(line).ok_or(Error::InvalidHeaderLine(line.to_string()))?);
-            } else if !line.starts_with('#') {
-                rle.current_line = line.bytes();
-                break;
-            }
-        }
-        if let Some(CxrleData { pos: Some(pos), .. }) = rle.cxrle_data {
-            rle.position = pos;
-            rle.x_start = pos.0;
-        }
-        Ok(rle)
+        })
     }
 
     /// Data from the `#CXRLE` line.
@@ -187,17 +191,6 @@ impl<'a> Rle<'a> {
     pub fn cells<'b>(&'b mut self) -> Cells<'a, 'b> {
         Cells { parser: self }
     }
-}
-
-/// Position and state of a cell.
-#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq)]
-pub struct CellData {
-    /// Coordinates of the cell.
-    pub position: Coordinates,
-    /// State of the cell.
-    ///
-    /// For rules with only 2 states, `0` means dead and `1` means alive.
-    pub state: u8,
 }
 
 /// An iterator over living cells in an RLE file.
@@ -243,7 +236,10 @@ impl<'a> Rle<'a> {
                         return Some(Err(Error::InvalidState(state_string)));
                     }
                     match c {
-                        b'b' | b'.' => self.position.0 += self.run_count,
+                        b'b' | b'.' => {
+                            self.position.0 += self.run_count;
+                            self.run_count = 0;
+                        }
                         b'o' | b'A'..=b'X' => {
                             if c == b'o' {
                                 self.state = 1;
@@ -265,12 +261,12 @@ impl<'a> Rle<'a> {
                         }
                         b'$' => {
                             self.position.0 = self.x_start;
-                            self.position.1 += self.run_count
+                            self.position.1 += self.run_count;
+                            self.run_count = 0;
                         }
                         b'!' => return None,
                         _ => return Some(Err(Error::InvalidState(char::from(c).to_string()))),
                     }
-                    self.run_count = 0;
                 }
             } else if let Some(l) = self.lines.next() {
                 if l.starts_with('#') | l.starts_with("x ") | l.starts_with("x=") {
@@ -473,7 +469,7 @@ bo$2bo$3o!";
     #[test]
     fn rle_generations_256() -> Result<(), Error> {
         const OSCILLATOR: &str = r"x = 3, y = 3, rule = 23/3/256
-.pUwH$vIxNrQ$2A!";
+.AwH$vIxNrQ$2pU!";
 
         let mut oscillator = Rle::new(OSCILLATOR)?;
 
@@ -493,7 +489,7 @@ bo$2bo$3o!";
             vec![
                 CellData {
                     position: (1, 0),
-                    state: 45
+                    state: 1
                 },
                 CellData {
                     position: (2, 0),
@@ -513,11 +509,11 @@ bo$2bo$3o!";
                 },
                 CellData {
                     position: (0, 2),
-                    state: 1
+                    state: 45
                 },
                 CellData {
                     position: (1, 2),
-                    state: 1
+                    state: 45
                 },
             ]
         );
