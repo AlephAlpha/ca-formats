@@ -4,6 +4,10 @@
 
 读取生命游戏的图样文件。返回一个活细胞坐标的 Iterator。
 
+正在重写中。重写之后将不再兼容以前的版本。
+
+<!--
+
 Parsing 是 Lazy 的。如果文件有错，它不会马上发现。
 
 只适用于两种状态的规则。
@@ -29,6 +33,8 @@ let mut glider = RLE::new(GLIDER).collect::<Result<Vec<_>, _>>().unwrap();
 glider.sort();
 assert_eq!(glider, vec![(0, 1), (1, 2), (2, 0), (2, 1), (2, 2)]);
 ```
+
+-->
 
 ## 另见
 
