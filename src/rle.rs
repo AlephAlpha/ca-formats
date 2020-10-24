@@ -80,6 +80,8 @@ fn parse_header(line: &str) -> Option<HeaderData> {
 /// The format is basically the same as the original [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 /// format, except that it supports up to 256 states, and a `#CXRLE` line.
 ///
+/// As an iterator, it iterates over the living cells.
+///
 /// # Example
 ///
 /// ```rust
@@ -92,15 +94,12 @@ fn parse_header(line: &str) -> Option<HeaderData> {
 /// x = 3, y = 3, rule = B3/S23
 /// bob$2bo$3o!";
 ///
-/// let mut glider = Rle::new(GLIDER).unwrap();
+/// let glider = Rle::new(GLIDER).unwrap();
 /// assert_eq!(glider.header_data().unwrap().x, 3);
 /// assert_eq!(glider.header_data().unwrap().y, 3);
 /// assert_eq!(glider.header_data().unwrap().rule, Some(String::from("B3/S23")));
 ///
-/// let cells = glider
-///     .cells()
-///     .map(|cell| cell.unwrap().position)
-///     .collect::<Vec<_>>();
+/// let cells = glider.map(|cell| cell.unwrap().position).collect::<Vec<_>>();
 /// assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
 /// ```
 #[derive(Clone, Debug)]
@@ -186,33 +185,13 @@ impl<'a> Rle<'a> {
     pub fn header_data(&self) -> Option<&HeaderData> {
         self.header_data.as_ref()
     }
-
-    /// An iterator over living cells in an RLE file.
-    pub fn cells<'b>(&'b mut self) -> Cells<'a, 'b> {
-        Cells { parser: self }
-    }
 }
 
 /// An iterator over living cells in an RLE file.
-///
-/// The actual implementation of the iterator is inside the `Rle` struct.
-/// If you want to clone the iterator, please clone the `Rle` instead.
-#[derive(Debug)]
-pub struct Cells<'a, 'b> {
-    parser: &'b mut Rle<'a>,
-}
-
-impl<'a, 'b> Iterator for Cells<'a, 'b> {
+impl<'a> Iterator for Rle<'a> {
     type Item = Result<CellData, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.parser.next_cell()
-    }
-}
-
-impl<'a> Rle<'a> {
-    /// The implementation of the `Cells` iterator.
-    fn next_cell<'b>(&'b mut self) -> Option<Result<CellData, Error>> {
         if self.alive_count > 0 {
             self.alive_count -= 1;
             let cell = CellData {
@@ -356,7 +335,7 @@ mod tests {
 x = 3, y = 3, rule = B3/S23
 bob$2bo$3o!";
 
-        let mut glider = Rle::new(GLIDER)?;
+        let glider = Rle::new(GLIDER)?;
 
         assert_eq!(glider.cxrle_data, None);
         assert_eq!(
@@ -369,7 +348,6 @@ bob$2bo$3o!";
         );
 
         let cells = glider
-            .cells()
             .map(|res| res.map(|c| c.position))
             .collect::<Result<Vec<_>, _>>()?;
         assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
@@ -382,7 +360,7 @@ bob$2bo$3o!";
 x = 3, y = 3, rule = B3/S23
 bo$2bo$3o!";
 
-        let mut glider = Rle::new(GLIDER)?;
+        let glider = Rle::new(GLIDER)?;
 
         assert_eq!(
             glider.cxrle_data,
@@ -401,7 +379,6 @@ bo$2bo$3o!";
         );
 
         let cells = glider
-            .cells()
             .map(|res| res.map(|c| c.position))
             .collect::<Result<Vec<_>, _>>()?;
         assert_eq!(cells, vec![(0, -1), (1, 0), (-1, 1), (0, 1), (1, 1)]);
@@ -413,7 +390,7 @@ bo$2bo$3o!";
         const OSCILLATOR: &str = r"x = 3, y = 3, rule = 3457/357/5
 3A$B2A$.CD!";
 
-        let mut oscillator = Rle::new(OSCILLATOR)?;
+        let oscillator = Rle::new(OSCILLATOR)?;
 
         assert_eq!(oscillator.cxrle_data, None);
         assert_eq!(
@@ -425,7 +402,7 @@ bo$2bo$3o!";
             })
         );
 
-        let cells = oscillator.cells().collect::<Result<Vec<_>, _>>()?;
+        let cells = oscillator.collect::<Result<Vec<_>, _>>()?;
         assert_eq!(
             cells,
             vec![
@@ -471,7 +448,7 @@ bo$2bo$3o!";
         const OSCILLATOR: &str = r"x = 3, y = 3, rule = 23/3/256
 .AwH$vIxNrQ$2pU!";
 
-        let mut oscillator = Rle::new(OSCILLATOR)?;
+        let oscillator = Rle::new(OSCILLATOR)?;
 
         assert_eq!(oscillator.cxrle_data, None);
         assert_eq!(
@@ -483,7 +460,7 @@ bo$2bo$3o!";
             })
         );
 
-        let cells = oscillator.cells().collect::<Result<Vec<_>, _>>()?;
+        let cells = oscillator.collect::<Result<Vec<_>, _>>()?;
         assert_eq!(
             cells,
             vec![

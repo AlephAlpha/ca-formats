@@ -24,15 +24,12 @@ const GLIDER: &str = r"#N Glider
 x = 3, y = 3, rule = B3/S23
 bob$2bo$3o!";
 
-let mut glider = Rle::new(GLIDER).unwrap();
+let glider = Rle::new(GLIDER).unwrap();
 assert_eq!(glider.header_data().unwrap().x, 3);
 assert_eq!(glider.header_data().unwrap().y, 3);
 assert_eq!(glider.header_data().unwrap().rule, Some(String::from("B3/S23")));
 
-let cells = glider
-    .cells()
-    .map(|cell| cell.unwrap().position)
-    .collect::<Vec<_>>();
+let cells = glider.map(|cell| cell.unwrap().position).collect::<Vec<_>>();
 assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
 ```
 

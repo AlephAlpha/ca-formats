@@ -2,7 +2,9 @@
 
 [![Travis (.com)](https://img.shields.io/travis/com/AlephAlpha/ca-formats)](https://travis-ci.com/AlephAlpha/ca-formats) [![Crates.io](https://img.shields.io/crates/v/ca-formats)](https://crates.io/crates/ca-formats) [![Docs.rs](https://docs.rs/ca-formats/badge.svg)](https://docs.rs/ca-formats/) [![中文](https://img.shields.io/badge/readme-%E4%B8%AD%E6%96%87-brightgreen)](README.md)
 
-Parsing pattern files for Conway's Game of Life. The parsers read a string and return an iterator of coordinates of living cells.
+Parsing pattern files for Conway's Game of Life.
+
+The parsers read a string and return an iterator of coordinates of living cells.
 
 ## Supported formats
 
@@ -22,15 +24,12 @@ const GLIDER: &str = r"#N Glider
 x = 3, y = 3, rule = B3/S23
 bob$2bo$3o!";
 
-let mut glider = Rle::new(GLIDER).unwrap();
+let glider = Rle::new(GLIDER).unwrap();
 assert_eq!(glider.header_data().unwrap().x, 3);
 assert_eq!(glider.header_data().unwrap().y, 3);
 assert_eq!(glider.header_data().unwrap().rule, Some(String::from("B3/S23")));
 
-let cells = glider
-    .cells()
-    .map(|cell| cell.unwrap().position)
-    .collect::<Vec<_>>();
+let cells = glider.map(|cell| cell.unwrap().position).collect::<Vec<_>>();
 assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
 ```
 

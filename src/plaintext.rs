@@ -13,6 +13,8 @@ pub enum Error {
 
 /// A parser for [Plaintext](https://www.conwaylife.com/wiki/Plaintext) format.
 ///
+/// As an iterator, it iterates over the living cells.
+///
 /// # Example
 ///
 /// ```rust
@@ -24,9 +26,9 @@ pub enum Error {
 /// ..O
 /// OOO";
 ///
-/// let mut glider = Plaintext::new(GLIDER);
+/// let glider = Plaintext::new(GLIDER);
 ///
-/// let cells = glider.cells().map(|cell| cell.unwrap()).collect::<Vec<_>>();
+/// let cells = glider.map(|cell| cell.unwrap()).collect::<Vec<_>>();
 /// assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
 /// ```
 #[derive(Clone, Debug)]
@@ -58,33 +60,13 @@ impl<'a> Plaintext<'a> {
             position: (0, 0),
         }
     }
-
-    /// An iterator over living cells in a Plaintext file.
-    pub fn cells<'b>(&'b mut self) -> Cells<'a, 'b> {
-        Cells { parser: self }
-    }
 }
 
 /// An iterator over living cells in a Plaintext file.
-///
-/// The actual implementation of the iterator is inside the `Plaintext` struct.
-/// If you want to clone the iterator, please clone the `Plaintext` instead.
-#[derive(Debug)]
-pub struct Cells<'a, 'b> {
-    parser: &'b mut Plaintext<'a>,
-}
-
-impl<'a, 'b> Iterator for Cells<'a, 'b> {
+impl<'a> Iterator for Plaintext<'a> {
     type Item = Result<Coordinates, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.parser.next_cell()
-    }
-}
-
-impl<'a> Plaintext<'a> {
-    /// The implementation of the `Cells` iterator.
-    fn next_cell<'b>(&'b mut self) -> Option<Result<Coordinates, Error>> {
         loop {
             if let Some(c) = self.current_line.next() {
                 match c {
@@ -124,9 +106,9 @@ mod tests {
 ..O
 OOO";
 
-        let mut glider = Plaintext::new(GLIDER);
+        let glider = Plaintext::new(GLIDER);
 
-        let cells = glider.cells().collect::<Result<Vec<_>, _>>()?;
+        let cells = glider.collect::<Result<Vec<_>, _>>()?;
         assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
         Ok(())
     }

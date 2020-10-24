@@ -18,8 +18,10 @@ pub enum Error {
 
 /// A parser for [Extended Wechsler format](https://www.conwaylife.com/wiki/Apgcode#Extended_Wechsler_Format).
 ///
-/// Extended Wechsler format is the part of the apgcode that encodes the pattern,
+/// Extended Wechsler format is the part of apgcode that encodes the pattern,
 /// e.g. `153` in `xq4_153`.
+///
+/// As an iterator, it iterates over the living cells.
 ///
 /// # Example
 ///
@@ -28,9 +30,9 @@ pub enum Error {
 ///
 /// const GLIDER: &str = "153";
 ///
-/// let mut glider = Wechsler::new(GLIDER);
+/// let glider = Wechsler::new(GLIDER);
 ///
-/// let cells = glider.cells().map(|cell| cell.unwrap()).collect::<Vec<_>>();
+/// let cells = glider.map(|cell| cell.unwrap()).collect::<Vec<_>>();
 /// assert_eq!(cells, vec![(0, 0), (1, 0), (1, 2), (2, 0), (2, 1)]);
 /// ```
 #[derive(Clone, Debug)]
@@ -58,33 +60,13 @@ impl<'a> Wechsler<'a> {
             index: 5,
         }
     }
-
-    /// An iterator over living cells in a string in Extended Wechsler format.
-    pub fn cells<'b>(&'b mut self) -> Cells<'a, 'b> {
-        Cells { parser: self }
-    }
 }
 
 /// An iterator over living cells in a string in Extended Wechsler format.
-///
-/// The actual implementation of the iterator is inside the `Wechsler` struct.
-/// If you want to clone the iterator, please clone the `Wechsler` instead.
-#[derive(Debug)]
-pub struct Cells<'a, 'b> {
-    parser: &'b mut Wechsler<'a>,
-}
-
-impl<'a, 'b> Iterator for Cells<'a, 'b> {
+impl<'a> Iterator for Wechsler<'a> {
     type Item = Result<Coordinates, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        self.parser.next_cell()
-    }
-}
-
-impl<'a> Wechsler<'a> {
-    /// The implementation of the `Cells` iterator.
-    fn next_cell<'b>(&'b mut self) -> Option<Result<Coordinates, Error>> {
         loop {
             if self.index < 5 {
                 loop {
@@ -155,6 +137,8 @@ pub enum PatternType {
 /// i.e., still lifes, oscillators, spaceships.
 /// Rules with more than 2 states are not yet supported.
 ///
+/// As an iterator, it iterates over the living cells.
+///
 /// # Example
 ///
 /// ```rust
@@ -162,11 +146,11 @@ pub enum PatternType {
 ///
 /// const GLIDER: &str = "xq4_153";
 ///
-/// let mut glider = ApgCode::new(GLIDER).unwrap();
+/// let glider = ApgCode::new(GLIDER).unwrap();
 /// assert_eq!(glider.pattern_type(), PatternType::Spaceship);
 /// assert_eq!(glider.period(), 4);
 ///
-/// let cells = glider.cells().map(|cell| cell.unwrap()).collect::<Vec<_>>();
+/// let cells = glider.map(|cell| cell.unwrap()).collect::<Vec<_>>();
 /// assert_eq!(cells, vec![(0, 0), (1, 0), (1, 2), (2, 0), (2, 1)]);
 /// ```
 #[derive(Clone, Debug)]
@@ -212,12 +196,14 @@ impl<'a> ApgCode<'a> {
     pub fn pattern_type(&self) -> PatternType {
         self.pattern_type
     }
+}
 
-    /// An iterator over living cells in a Plaintext file.
-    pub fn cells<'b>(&'b mut self) -> Cells<'a, 'b> {
-        Cells {
-            parser: &mut self.wechsler,
-        }
+/// An iterator over living cells in an apgcode string.
+impl<'a> Iterator for ApgCode<'a> {
+    type Item = Result<Coordinates, Error>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        self.wechsler.next()
     }
 }
 
@@ -228,9 +214,9 @@ mod tests {
     #[test]
     fn wechsler_glider() -> Result<(), Error> {
         const GLIDER: &str = "153";
-        let mut glider = Wechsler::new(GLIDER);
+        let glider = Wechsler::new(GLIDER);
 
-        let cells = glider.cells().collect::<Result<Vec<_>, _>>()?;
+        let cells = glider.collect::<Result<Vec<_>, _>>()?;
         assert_eq!(cells, vec![(0, 0), (1, 0), (1, 2), (2, 0), (2, 1)]);
         Ok(())
     }
@@ -238,9 +224,9 @@ mod tests {
     #[test]
     fn wechsler_twin_bees_shuttle() -> Result<(), Error> {
         const TWIN_BEE_SHUTTLE: &str = "033y133zzzckgsxsgkczz0cc";
-        let mut twin_bees_shuttle = Wechsler::new(TWIN_BEE_SHUTTLE);
+        let twin_bees_shuttle = Wechsler::new(TWIN_BEE_SHUTTLE);
 
-        let cells = twin_bees_shuttle.cells().collect::<Result<Vec<_>, _>>()?;
+        let cells = twin_bees_shuttle.collect::<Result<Vec<_>, _>>()?;
         assert_eq!(
             cells,
             vec![
@@ -280,12 +266,12 @@ mod tests {
     #[test]
     fn apgcode_glider() -> Result<(), Error> {
         const GLIDER: &str = "xq4_153";
-        let mut glider = ApgCode::new(GLIDER)?;
+        let glider = ApgCode::new(GLIDER)?;
 
         assert_eq!(glider.pattern_type(), PatternType::Spaceship);
         assert_eq!(glider.period(), 4);
 
-        let cells = glider.cells().collect::<Result<Vec<_>, _>>()?;
+        let cells = glider.collect::<Result<Vec<_>, _>>()?;
         assert_eq!(cells, vec![(0, 0), (1, 0), (1, 2), (2, 0), (2, 1)]);
         Ok(())
     }
