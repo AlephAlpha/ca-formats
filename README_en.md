@@ -8,7 +8,7 @@ Parsing pattern files for Conway's Game of Life. The parsers read a string and r
 
 - [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 - [Plaintext](https://www.conwaylife.com/wiki/Plaintext)
-<!-- - [apgcode](https://www.conwaylife.com/wiki/Apgcode) -->
+- [apgcode](https://www.conwaylife.com/wiki/Apgcode)
 
 ## Example
 

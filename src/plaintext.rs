@@ -16,7 +16,7 @@ pub enum Error {
 /// # Example
 ///
 /// ```rust
-/// # use ca_formats::plaintext::Plaintext;
+/// use ca_formats::plaintext::Plaintext;
 ///
 /// const GLIDER: &str = r"! Glider
 /// !
@@ -26,10 +26,7 @@ pub enum Error {
 ///
 /// let mut glider = Plaintext::new(GLIDER);
 ///
-/// let cells = glider
-///     .cells()
-///     .map(|cell| cell.unwrap())
-///     .collect::<Vec<_>>();
+/// let cells = glider.cells().map(|cell| cell.unwrap()).collect::<Vec<_>>();
 /// assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
 /// ```
 #[derive(Clone, Debug)]

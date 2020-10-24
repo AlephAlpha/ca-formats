@@ -21,7 +21,7 @@ pub enum Error {
 }
 
 /// Data from the `#CXRLE` line, e.g., `#CXRLE Pos=0,-1377 Gen=3480106827776`.
-#[derive(Clone, Debug, Eq, PartialEq, Default)]
+#[derive(Clone, Debug, Eq, PartialEq, Default, Hash)]
 pub struct CxrleData {
     /// Coordinates of the upper left corner of the pattern.
     pub pos: Option<Coordinates>,
@@ -50,7 +50,7 @@ fn parse_cxrle(line: &str) -> Option<CxrleData> {
 }
 
 /// Data from the header line, e.g., `x = 3, y = 3, rule = B3/S23`.
-#[derive(Clone, Debug, Eq, PartialEq, Default)]
+#[derive(Clone, Debug, Eq, PartialEq, Default, Hash)]
 pub struct HeaderData {
     /// Width of the pattern.
     pub x: u64,
@@ -83,7 +83,7 @@ fn parse_header(line: &str) -> Option<HeaderData> {
 /// # Example
 ///
 /// ```rust
-/// # use ca_formats::rle::Rle;
+/// use ca_formats::rle::Rle;
 ///
 /// const GLIDER: &str = r"#N Glider
 /// #O Richard K. Guy

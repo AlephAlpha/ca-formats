@@ -6,7 +6,7 @@
 //!
 //! - [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 //! - [Plaintext](https://www.conwaylife.com/wiki/Plaintext)
-// - [apgcode](https://www.conwaylife.com/wiki/Apgcode)
+//! - [apgcode](https://www.conwaylife.com/wiki/Apgcode)
 //!
 //! # Example
 //!
@@ -49,7 +49,7 @@ pub type Coordinates = (i64, i64);
 /// Position and state of a cell.
 ///
 /// Rules with more than 256 states are not supported.
-#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Default)]
+#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Default, Hash)]
 pub struct CellData {
     /// Coordinates of the cell.
     pub position: Coordinates,
