@@ -40,12 +40,7 @@
 //!     and [Life 1.06](https://www.conwaylife.com/wiki/Life_1.06) formats.
 //!
 
-// mod error;
-// mod formats;
-
-// pub use error::Error;
-// pub use formats::*;
-
+pub mod apgcode;
 pub mod plaintext;
 pub mod rle;
 

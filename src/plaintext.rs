@@ -34,7 +34,7 @@ pub enum Error {
 /// ```
 #[derive(Clone, Debug)]
 pub struct Plaintext<'a> {
-    /// An iterator over lines of the RLE string.
+    /// An iterator over lines of the Plaintext string.
     lines: Lines<'a>,
 
     /// An iterator over bytes of the current line.
@@ -62,13 +62,13 @@ impl<'a> Plaintext<'a> {
         }
     }
 
-    /// An iterator over living cells in an Plaintext file.
+    /// An iterator over living cells in a Plaintext file.
     pub fn cells<'b>(&'b mut self) -> Cells<'a, 'b> {
         Cells { parser: self }
     }
 }
 
-/// An iterator over living cells in an Plaintext file.
+/// An iterator over living cells in a Plaintext file.
 ///
 /// The actual implementation of the iterator is inside the `Plaintext` struct.
 /// If you want to clone the iterator, please clone the `Plaintext` instead.

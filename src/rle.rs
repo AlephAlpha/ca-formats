@@ -1,4 +1,4 @@
-//! A parser for Golly's [Extended RLE](http://golly.sourceforge.net/Help/formats.html#rle) format.
+//! A parser for Golly's [Extended RLE format](http://golly.sourceforge.net/Help/formats.html#rle).
 //!
 //! It is basically the same as the original [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 //! format, except that it supports up to 256 states, and a `#CXRLE` line.
@@ -75,7 +75,7 @@ fn parse_header(line: &str) -> Option<HeaderData> {
     Some(data)
 }
 
-/// A parser for Golly's [Extended RLE](http://golly.sourceforge.net/Help/formats.html#rle) format.
+/// A parser for Golly's [Extended RLE format](http://golly.sourceforge.net/Help/formats.html#rle).
 ///
 /// The format is basically the same as the original [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 /// format, except that it supports up to 256 states, and a `#CXRLE` line.
