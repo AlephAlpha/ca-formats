@@ -23,6 +23,8 @@ pub enum Error {
 ///
 /// As an iterator, it iterates over the living cells.
 ///
+/// Reading from files is not supported, since the format is usually short and not stored in a file.
+///
 /// # Example
 ///
 /// ```rust
@@ -138,6 +140,8 @@ pub enum PatternType {
 /// Rules with more than 2 states are not yet supported.
 ///
 /// As an iterator, it iterates over the living cells.
+///
+/// Reading from files is not supported, since apgcode is usually short and not stored in a file.
 ///
 /// # Example
 ///

@@ -3,14 +3,14 @@
 //! It is basically the same as the original [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 //! format, except that it supports up to 256 states, and a `#CXRLE` line.
 
-use crate::{CellData, Coordinates};
+use crate::{CellData, Coordinates, Input};
 use lazy_static::lazy_static;
 use regex::Regex;
-use std::str::{Bytes, Lines};
+use std::io::{BufReader, Error as IoError, Read};
 use thiserror::Error;
 
 /// Errors that can be returned when parsing a RLE file.
-#[derive(Clone, Debug, Eq, Error, PartialEq)]
+#[derive(Debug, Error)]
 pub enum Error {
     #[error("Invalid state: {0}.")]
     InvalidState(String),
@@ -18,6 +18,8 @@ pub enum Error {
     InvalidCXRLELine(String),
     #[error("Invalid header line: {0}.")]
     InvalidHeaderLine(String),
+    #[error("Error when reading from input: {0}.")]
+    IoError(IoError),
 }
 
 /// Data from the `#CXRLE` line, e.g., `#CXRLE Pos=0,-1377 Gen=3480106827776`.
@@ -82,7 +84,9 @@ fn parse_header(line: &str) -> Option<HeaderData> {
 ///
 /// As an iterator, it iterates over the living cells.
 ///
-/// # Example
+/// # Examples
+///
+/// ## Reading from a string:
 ///
 /// ```rust
 /// use ca_formats::rle::Rle;
@@ -102,8 +106,20 @@ fn parse_header(line: &str) -> Option<HeaderData> {
 /// let cells = glider.map(|cell| cell.unwrap().position).collect::<Vec<_>>();
 /// assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
 /// ```
+///
+/// ## Reading from a file:
+///
+/// ``` rust
+/// use std::fs::File;
+/// use ca_formats::rle::Rle;
+///
+/// let file = File::open("tests/sirrobin.rle").unwrap();
+/// let sirrobin = Rle::new_from_file(file).unwrap();
+///
+/// assert_eq!(sirrobin.count(), 282);
+/// ```
 #[derive(Clone, Debug)]
-pub struct Rle<'a> {
+pub struct Rle<I: Input> {
     /// Data from the `#CXRLE` line.
     cxrle_data: Option<CxrleData>,
 
@@ -111,10 +127,10 @@ pub struct Rle<'a> {
     header_data: Option<HeaderData>,
 
     /// An iterator over lines of the RLE string.
-    lines: Lines<'a>,
+    lines: I::Lines,
 
     /// An iterator over bytes of the current line.
-    current_line: Bytes<'a>,
+    current_line: Option<I::Bytes>,
 
     /// Coordinates of the current cell.
     position: Coordinates,
@@ -135,26 +151,31 @@ pub struct Rle<'a> {
     state_prefix: Option<u8>,
 }
 
-impl<'a> Rle<'a> {
-    /// Create a new parser instance from a string, and try to read the header and the `#CXRLE` line.
+impl<I: Input> Rle<I> {
+    /// Create a new parser instance from input, and try to read the header and the `#CXRLE` line.
     ///
     /// If there are multiple header lines / `CXRLE` lines, only the last one will be taken.
-    pub fn new(string: &'a str) -> Result<Self, Error> {
-        let mut lines = string.lines();
+    pub fn new(input: I) -> Result<Self, Error> {
+        let mut lines = input.lines();
         let mut cxrle_data = None;
         let mut header_data = None;
-        let mut current_line = "".bytes();
+        let mut current_line = None;
         let mut position = (0, 0);
         let mut x_start = 0;
-        while let Some(line) = lines.next() {
-            if line.starts_with("#CXRLE") {
-                cxrle_data
-                    .replace(parse_cxrle(line).ok_or(Error::InvalidCXRLELine(line.to_string()))?);
-            } else if line.starts_with("x ") || line.starts_with("x=") {
-                header_data
-                    .replace(parse_header(line).ok_or(Error::InvalidHeaderLine(line.to_string()))?);
-            } else if !line.starts_with('#') {
-                current_line = line.bytes();
+        while let Some(item) = lines.next() {
+            let line = I::line(item).map_err(Error::IoError)?;
+            if line.as_ref().starts_with("#CXRLE") {
+                cxrle_data.replace(
+                    parse_cxrle(line.as_ref())
+                        .ok_or(Error::InvalidCXRLELine(line.as_ref().to_string()))?,
+                );
+            } else if line.as_ref().starts_with("x ") || line.as_ref().starts_with("x=") {
+                header_data.replace(
+                    parse_header(line.as_ref())
+                        .ok_or(Error::InvalidHeaderLine(line.as_ref().to_string()))?,
+                );
+            } else if !line.as_ref().starts_with('#') {
+                current_line = Some(I::bytes(line));
                 break;
             }
         }
@@ -187,8 +208,15 @@ impl<'a> Rle<'a> {
     }
 }
 
+impl<R: Read> Rle<BufReader<R>> {
+    /// Creates a new parser instance from something that implements `Read` trait, e.g., a `File`.
+    pub fn new_from_file(file: R) -> Result<Self, Error> {
+        Self::new(BufReader::new(file))
+    }
+}
+
 /// An iterator over living cells in an RLE file.
-impl<'a> Iterator for Rle<'a> {
+impl<I: Input> Iterator for Rle<I> {
     type Item = Result<CellData, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -202,7 +230,7 @@ impl<'a> Iterator for Rle<'a> {
             return Some(Ok(cell));
         }
         loop {
-            if let Some(c) = self.current_line.next() {
+            if let Some(c) = self.current_line.as_mut().and_then(|i| i.next()) {
                 if c.is_ascii_digit() {
                     self.run_count = 10 * self.run_count + (c - b'0') as i64
                 } else if !c.is_ascii_whitespace() {
@@ -247,11 +275,21 @@ impl<'a> Iterator for Rle<'a> {
                         _ => return Some(Err(Error::InvalidState(char::from(c).to_string()))),
                     }
                 }
-            } else if let Some(l) = self.lines.next() {
-                if l.starts_with('#') | l.starts_with("x ") | l.starts_with("x=") {
-                    continue;
-                } else {
-                    self.current_line = l.bytes();
+            } else if let Some(item) = self.lines.next() {
+                match I::line(item) {
+                    Ok(line) => {
+                        if line.as_ref().starts_with('#')
+                            | line.as_ref().starts_with("x ")
+                            | line.as_ref().starts_with("x=")
+                        {
+                            continue;
+                        } else {
+                            self.current_line = Some(I::bytes(line));
+                        }
+                    }
+                    Err(e) => {
+                        return Some(Err(Error::IoError(e)));
+                    }
                 }
             } else {
                 return None;

@@ -4,15 +4,15 @@
 
 读取生命游戏的图样文件，返回一个活细胞坐标的 Iterator。
 
-正在重写中。重写之后将不再兼容以前的版本。
-
 ## 支持的格式
 
 - [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 - [Plaintext](https://www.conwaylife.com/wiki/Plaintext)
 - [apgcode](https://www.conwaylife.com/wiki/Apgcode)
 
-## 用法
+## 范例
+
+### 从字符串中读取:
 
 ```rust
 use ca_formats::rle::Rle;
@@ -31,6 +31,18 @@ assert_eq!(glider.header_data().unwrap().rule, Some(String::from("B3/S23")));
 
 let cells = glider.map(|cell| cell.unwrap().position).collect::<Vec<_>>();
 assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
+```
+
+### 从文件中读取:
+
+```rust
+use std::fs::File;
+use ca_formats::rle::Rle;
+
+let file = File::open("tests/sirrobin.rle").unwrap();
+let sirrobin = Rle::new_from_file(file).unwrap();
+
+assert_eq!(sirrobin.count(), 282);
 ```
 
 ## 另见

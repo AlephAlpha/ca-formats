@@ -8,7 +8,9 @@
 //! - [Plaintext](https://www.conwaylife.com/wiki/Plaintext)
 //! - [apgcode](https://www.conwaylife.com/wiki/Apgcode)
 //!
-//! # Example
+//! # Examples
+//!
+//! ## Reading from a string:
 //!
 //! ```rust
 //! use ca_formats::rle::Rle;
@@ -29,6 +31,18 @@
 //! assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
 //! ```
 //!
+//! ## Reading from a file:
+//!
+//! ``` rust
+//! use std::fs::File;
+//! use ca_formats::rle::Rle;
+//!
+//! let file = File::open("tests/sirrobin.rle").unwrap();
+//! let sirrobin = Rle::new_from_file(file).unwrap();
+//!
+//! assert_eq!(sirrobin.count(), 282);
+//! ```
+//!
 //! # See also
 //!
 //! - [ca-rules](https://crates.io/crates/ca-rules) - A parser for rule strings.
@@ -38,8 +52,11 @@
 //!
 
 pub mod apgcode;
+mod input;
 pub mod plaintext;
 pub mod rle;
+
+pub use input::Input;
 
 pub type Coordinates = (i64, i64);
 

@@ -14,6 +14,8 @@ The parsers read a string and return an iterator of coordinates of living cells.
 
 ## Example
 
+### Reading from a string:
+
 ```rust
 use ca_formats::rle::Rle;
 
@@ -31,6 +33,18 @@ assert_eq!(glider.header_data().unwrap().rule, Some(String::from("B3/S23")));
 
 let cells = glider.map(|cell| cell.unwrap().position).collect::<Vec<_>>();
 assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
+```
+
+### Reading from a file:
+
+```rust
+use std::fs::File;
+use ca_formats::rle::Rle;
+
+let file = File::open("tests/sirrobin.rle").unwrap();
+let sirrobin = Rle::new_from_file(file).unwrap();
+
+assert_eq!(sirrobin.count(), 282);
 ```
 
 ## See also

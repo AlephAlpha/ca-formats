@@ -1,21 +1,25 @@
 //! A parser for [Plaintext](https://www.conwaylife.com/wiki/Plaintext) format.
 
-use crate::Coordinates;
-use std::str::{Bytes, Lines};
+use crate::{Coordinates, Input};
+use std::io::{BufReader, Error as IoError, Read};
 use thiserror::Error;
 
 /// Errors that can be returned when parsing a Plaintext file.
-#[derive(Clone, Debug, Eq, Error, PartialEq)]
+#[derive(Debug, Error)]
 pub enum Error {
     #[error("Unexpected character: {0}.")]
     UnexpectedChar(char),
+    #[error("Error when reading from input: {0}.")]
+    IoError(IoError),
 }
 
 /// A parser for [Plaintext](https://www.conwaylife.com/wiki/Plaintext) format.
 ///
 /// As an iterator, it iterates over the living cells.
 ///
-/// # Example
+/// # Examples
+///
+/// ## Reading from a string:
 ///
 /// ```rust
 /// use ca_formats::plaintext::Plaintext;
@@ -26,49 +30,69 @@ pub enum Error {
 /// ..O
 /// OOO";
 ///
-/// let glider = Plaintext::new(GLIDER);
+/// let glider = Plaintext::new(GLIDER).unwrap();
 ///
 /// let cells = glider.map(|cell| cell.unwrap()).collect::<Vec<_>>();
 /// assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
 /// ```
+///
+/// ## Reading from a file:
+///
+/// ``` rust
+/// use std::fs::File;
+/// use ca_formats::plaintext::Plaintext;
+///
+/// let file = File::open("tests/sirrobin.cells").unwrap();
+/// let sirrobin = Plaintext::new_from_file(file).unwrap();
+///
+/// assert_eq!(sirrobin.count(), 282);
+/// ```
 #[derive(Clone, Debug)]
-pub struct Plaintext<'a> {
-    /// An iterator over lines of the Plaintext string.
-    lines: Lines<'a>,
+pub struct Plaintext<I: Input> {
+    /// An iterator over lines of a Plaintext file.
+    lines: I::Lines,
 
     /// An iterator over bytes of the current line.
-    current_line: Bytes<'a>,
+    current_line: Option<I::Bytes>,
 
     /// Coordinates of the current cell.
     position: Coordinates,
 }
 
-impl<'a> Plaintext<'a> {
-    /// Creates a new parser instance from a string.
-    pub fn new(string: &'a str) -> Self {
-        let mut lines = string.lines();
-        let mut current_line = "".bytes();
-        while let Some(line) = lines.next() {
-            if !line.starts_with('!') {
-                current_line = line.bytes();
+impl<I: Input> Plaintext<I> {
+    /// Creates a new parser instance from input.
+    pub fn new(input: I) -> Result<Self, Error> {
+        let mut lines = input.lines();
+        let mut current_line = None;
+        while let Some(item) = lines.next() {
+            let line = I::line(item).map_err(Error::IoError)?;
+            if !line.as_ref().starts_with('!') {
+                current_line = Some(I::bytes(line));
                 break;
             }
         }
-        Plaintext {
+        Ok(Plaintext {
             lines,
             current_line,
             position: (0, 0),
-        }
+        })
+    }
+}
+
+impl<R: Read> Plaintext<BufReader<R>> {
+    /// Creates a new parser instance from something that implements `Read` trait, e.g., a `File`.
+    pub fn new_from_file(file: R) -> Result<Self, Error> {
+        Self::new(BufReader::new(file))
     }
 }
 
 /// An iterator over living cells in a Plaintext file.
-impl<'a> Iterator for Plaintext<'a> {
+impl<I: Input> Iterator for Plaintext<I> {
     type Item = Result<Coordinates, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            if let Some(c) = self.current_line.next() {
+            if let Some(c) = self.current_line.as_mut().and_then(|i| i.next()) {
                 match c {
                     b'O' | b'*' => {
                         let cell = self.position;
@@ -79,13 +103,20 @@ impl<'a> Iterator for Plaintext<'a> {
                     _ if c.is_ascii_whitespace() => continue,
                     _ => return Some(Err(Error::UnexpectedChar(char::from(c)))),
                 }
-            } else if let Some(l) = self.lines.next() {
-                if l.starts_with('!') {
-                    continue;
-                } else {
-                    self.position.0 = 0;
-                    self.position.1 += 1;
-                    self.current_line = l.bytes();
+            } else if let Some(item) = self.lines.next() {
+                match I::line(item) {
+                    Ok(line) => {
+                        if line.as_ref().starts_with('!') {
+                            continue;
+                        } else {
+                            self.position.0 = 0;
+                            self.position.1 += 1;
+                            self.current_line = Some(I::bytes(line));
+                        }
+                    }
+                    Err(e) => {
+                        return Some(Err(Error::IoError(e)));
+                    }
                 }
             } else {
                 return None;
@@ -106,7 +137,7 @@ mod tests {
 ..O
 OOO";
 
-        let glider = Plaintext::new(GLIDER);
+        let glider = Plaintext::new(GLIDER)?;
 
         let cells = glider.collect::<Result<Vec<_>, _>>()?;
         assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
