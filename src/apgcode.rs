@@ -1,7 +1,5 @@
-//! A parser for [apgcode](https://www.conwaylife.com/wiki/Apgcode) format.
-//!
-//! A parser for [Extended Wechsler format](https://www.conwaylife.com/wiki/Apgcode#Extended_Wechsler_Format)
-//! is also provided.
+//! Parsers for [apgcode](https://www.conwaylife.com/wiki/Apgcode) format
+//! and [Extended Wechsler format](https://www.conwaylife.com/wiki/Apgcode#Extended_Wechsler_Format).
 
 use crate::Coordinates;
 use std::str::Bytes;
@@ -18,7 +16,7 @@ pub enum Error {
 
 /// A parser for [Extended Wechsler format](https://www.conwaylife.com/wiki/Apgcode#Extended_Wechsler_Format).
 ///
-/// Extended Wechsler format is the part of apgcode that encodes the pattern,
+/// Extended Wechsler format is the part of apgcode that encodes the cells in the pattern,
 /// e.g. `153` in `xq4_153`.
 ///
 /// As an iterator, it iterates over the living cells.

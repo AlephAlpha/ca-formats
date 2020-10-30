@@ -11,6 +11,7 @@ The parsers read a string and return an iterator of coordinates of living cells.
 - [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 - [Plaintext](https://www.conwaylife.com/wiki/Plaintext)
 - [apgcode](https://www.conwaylife.com/wiki/Apgcode)
+- [Macrocell](https://www.conwaylife.com/wiki/Macrocell)
 
 ## Example
 

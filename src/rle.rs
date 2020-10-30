@@ -64,11 +64,14 @@ pub struct HeaderData {
 
 /// Parse the header line.
 fn parse_header(line: &str) -> Option<HeaderData> {
-    let re =
-        Regex::new(r"^x\s*=\s*(?P<x>\d+),\s*y\s*=\s*(?P<y>\d+)(?:,\s*rule\s*=\s*(?P<rule>\S+))?")
-            .unwrap();
+    lazy_static! {
+        static ref RE: Regex = Regex::new(
+            r"^x\s*=\s*(?P<x>\d+),\s*y\s*=\s*(?P<y>\d+)(?:,\s*rule\s*=\s*(?P<rule>.*\S)\s*)?$"
+        )
+        .unwrap();
+    }
     let mut data = HeaderData::default();
-    let cap = re.captures(line)?;
+    let cap = RE.captures(line)?;
     data.x = cap["x"].parse().ok()?;
     data.y = cap["y"].parse().ok()?;
     if let Some(rule) = cap.name("rule") {
@@ -118,7 +121,7 @@ fn parse_header(line: &str) -> Option<HeaderData> {
 ///
 /// assert_eq!(sirrobin.count(), 282);
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Rle<I: Input> {
     /// Data from the `#CXRLE` line.
     cxrle_data: Option<CxrleData>,
@@ -212,6 +215,27 @@ impl<R: Read> Rle<BufReader<R>> {
     /// Creates a new parser instance from something that implements `Read` trait, e.g., a `File`.
     pub fn new_from_file(file: R) -> Result<Self, Error> {
         Self::new(BufReader::new(file))
+    }
+}
+
+impl<I: Input> Clone for Rle<I>
+where
+    I::Lines: Clone,
+    I::Bytes: Clone,
+{
+    fn clone(&self) -> Self {
+        Rle {
+            cxrle_data: self.cxrle_data.clone(),
+            header_data: self.header_data.clone(),
+            lines: self.lines.clone(),
+            current_line: self.current_line.clone(),
+            position: self.position,
+            x_start: self.x_start,
+            run_count: self.run_count,
+            alive_count: self.alive_count,
+            state: self.state,
+            state_prefix: self.state_prefix,
+        }
     }
 }
 
@@ -355,11 +379,11 @@ mod tests {
         );
         assert_eq!(parse_header("x = 3, y = -3"), None);
         assert_eq!(
-            parse_header("x=3,y=3,rule=B3/S23   ignored"),
+            parse_header("x = 3, y = 3, rule = Conway's Game of Life  "),
             Some(HeaderData {
                 x: 3,
                 y: 3,
-                rule: Some(String::from("B3/S23"))
+                rule: Some(String::from("Conway's Game of Life"))
             })
         );
     }

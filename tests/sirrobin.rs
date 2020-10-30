@@ -1,5 +1,6 @@
 use ca_formats::{
     apgcode::ApgCode,
+    macrocell::Macrocell,
     plaintext::Plaintext,
     rle::{HeaderData, Rle},
 };
@@ -42,6 +43,18 @@ fn apgcode_sirrobin() -> Result<(), Box<dyn Error>> {
     assert_eq!(sirrobin.period(), 6);
 
     assert_eq!(sirrobin.count(), 290);
+
+    Ok(())
+}
+
+#[test]
+fn macrocell_sirrobin() -> Result<(), Box<dyn Error>> {
+    let file = File::open("tests/sirrobin.mc")?;
+    let sirrobin = Macrocell::new_from_file(file)?;
+
+    assert_eq!(sirrobin.rule(), Some("B3/S23"));
+
+    assert_eq!(sirrobin.count(), 42);
 
     Ok(())
 }

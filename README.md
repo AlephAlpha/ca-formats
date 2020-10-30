@@ -9,6 +9,7 @@
 - [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 - [Plaintext](https://www.conwaylife.com/wiki/Plaintext)
 - [apgcode](https://www.conwaylife.com/wiki/Apgcode)
+- [Macrocell](https://www.conwaylife.com/wiki/Macrocell)
 
 ## 范例
 

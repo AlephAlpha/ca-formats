@@ -7,6 +7,7 @@
 //! - [RLE](https://www.conwaylife.com/wiki/Run_Length_Encoded)
 //! - [Plaintext](https://www.conwaylife.com/wiki/Plaintext)
 //! - [apgcode](https://www.conwaylife.com/wiki/Apgcode)
+//! - [Macrocell](https://www.conwaylife.com/wiki/Macrocell)
 //!
 //! # Examples
 //!
@@ -53,6 +54,7 @@
 
 pub mod apgcode;
 mod input;
+pub mod macrocell;
 pub mod plaintext;
 pub mod rle;
 

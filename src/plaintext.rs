@@ -47,7 +47,7 @@ pub enum Error {
 ///
 /// assert_eq!(sirrobin.count(), 282);
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Plaintext<I: Input> {
     /// An iterator over lines of a Plaintext file.
     lines: I::Lines,
@@ -83,6 +83,20 @@ impl<R: Read> Plaintext<BufReader<R>> {
     /// Creates a new parser instance from something that implements `Read` trait, e.g., a `File`.
     pub fn new_from_file(file: R) -> Result<Self, Error> {
         Self::new(BufReader::new(file))
+    }
+}
+
+impl<I: Input> Clone for Plaintext<I>
+where
+    I::Lines: Clone,
+    I::Bytes: Clone,
+{
+    fn clone(&self) -> Self {
+        Plaintext {
+            lines: self.lines.clone(),
+            current_line: self.current_line.clone(),
+            position: self.position,
+        }
     }
 }
 
