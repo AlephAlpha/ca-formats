@@ -28,12 +28,17 @@ pub struct Node {
 #[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash)]
 pub enum NodeData {
     /// A level 1 leaf, representing a 2x2 square, in rules with more than 2 states.
+    ///
+    /// The data contains the states of four cells in the square.
     Level1 { nw: u8, ne: u8, sw: u8, se: u8 },
     /// A level 3 leaf, representing a 8x8 square, in rules with 2 states.
     ///
     /// The data is represented by a 64-bit integer.
     Level3(u64),
     /// A non-leaf node.
+    ///
+    /// The data contains the level of the node,
+    /// and the ids of four children.
     Node {
         level: u8,
         nw: usize,
@@ -261,7 +266,7 @@ where
     }
 }
 
-/// An iterator over living cells in an Macrocell file.
+/// An iterator over quadtree nodes in an Macrocell file.
 impl<I: Input> Iterator for Macrocell<I> {
     type Item = Result<Node, Error>;
 
@@ -357,6 +362,8 @@ $$$$$$*$.*$
 4 0 1 2 3";
 
         let glider = Macrocell::new(GLIDER)?;
+
+        let _ = glider.clone();
 
         assert_eq!(glider.rule(), Some("B3/S23"));
 

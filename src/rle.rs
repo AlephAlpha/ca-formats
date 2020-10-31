@@ -399,6 +399,8 @@ bob$2bo$3o!";
 
         let glider = Rle::new(GLIDER)?;
 
+        let _ = glider.clone();
+
         assert_eq!(glider.cxrle_data, None);
         assert_eq!(
             glider.header_data,

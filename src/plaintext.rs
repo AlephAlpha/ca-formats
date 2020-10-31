@@ -153,6 +153,8 @@ OOO";
 
         let glider = Plaintext::new(GLIDER)?;
 
+        let _ = glider.clone();
+
         let cells = glider.collect::<Result<Vec<_>, _>>()?;
         assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
         Ok(())

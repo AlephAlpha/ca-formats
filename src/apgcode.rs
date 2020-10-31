@@ -218,6 +218,8 @@ mod tests {
         const GLIDER: &str = "153";
         let glider = Wechsler::new(GLIDER);
 
+        let _ = glider.clone();
+
         let cells = glider.collect::<Result<Vec<_>, _>>()?;
         assert_eq!(cells, vec![(0, 0), (1, 0), (1, 2), (2, 0), (2, 1)]);
         Ok(())
@@ -269,6 +271,8 @@ mod tests {
     fn apgcode_glider() -> Result<(), Error> {
         const GLIDER: &str = "xq4_153";
         let glider = ApgCode::new(GLIDER)?;
+
+        let _ = glider.clone();
 
         assert_eq!(glider.pattern_type(), PatternType::Spaceship);
         assert_eq!(glider.period(), 4);
