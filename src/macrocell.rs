@@ -211,12 +211,12 @@ impl<I: Input> Macrocell<I> {
             } else if line.as_ref().starts_with("#R") {
                 rule.replace(
                     parse_rule(line.as_ref())
-                        .ok_or(Error::InvalidHeaderLine(line.as_ref().to_string()))?,
+                        .ok_or_else(|| Error::InvalidHeaderLine(line.as_ref().to_string()))?,
                 );
             } else if line.as_ref().starts_with("#G") {
                 gen.replace(
                     parse_gen(line.as_ref())
-                        .ok_or(Error::InvalidHeaderLine(line.as_ref().to_string()))?,
+                        .ok_or_else(|| Error::InvalidHeaderLine(line.as_ref().to_string()))?,
                 );
             } else if !line.as_ref().starts_with('#') {
                 current_line = Some(line);
@@ -291,14 +291,12 @@ impl<I: Input> Iterator for Macrocell<I> {
                     } else {
                         return Some(Err(Error::InvalidNodeLine(line.as_ref().to_string())));
                     }
+                } else if let Some(data) = parse_node(line.as_ref()) {
+                    let node = Node { id: self.id, data };
+                    self.id += 1;
+                    return Some(Ok(node));
                 } else {
-                    if let Some(data) = parse_node(line.as_ref()) {
-                        let node = Node { id: self.id, data };
-                        self.id += 1;
-                        return Some(Ok(node));
-                    } else {
-                        return Some(Err(Error::InvalidNodeLine(line.as_ref().to_string())));
-                    }
+                    return Some(Err(Error::InvalidNodeLine(line.as_ref().to_string())));
                 }
             } else if let Some(item) = self.lines.next() {
                 match I::line(item) {

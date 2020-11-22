@@ -170,12 +170,12 @@ impl<I: Input> Rle<I> {
             if line.as_ref().starts_with("#CXRLE") {
                 cxrle_data.replace(
                     parse_cxrle(line.as_ref())
-                        .ok_or(Error::InvalidCXRLELine(line.as_ref().to_string()))?,
+                        .ok_or_else(|| Error::InvalidCXRLELine(line.as_ref().to_string()))?,
                 );
             } else if line.as_ref().starts_with("x ") || line.as_ref().starts_with("x=") {
                 header_data.replace(
                     parse_header(line.as_ref())
-                        .ok_or(Error::InvalidHeaderLine(line.as_ref().to_string()))?,
+                        .ok_or_else(|| Error::InvalidHeaderLine(line.as_ref().to_string()))?,
                 );
             } else if !line.as_ref().starts_with('#') {
                 current_line = Some(I::bytes(line));

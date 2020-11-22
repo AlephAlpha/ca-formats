@@ -182,11 +182,11 @@ impl<'a> ApgCode<'a> {
         }
         let wechsler_string = split.next().ok_or(Error::Unencodable)?;
         let wechsler = Wechsler::new(wechsler_string);
-        return Ok(ApgCode {
+        Ok(ApgCode {
             pattern_type,
             period,
             wechsler,
-        });
+        })
     }
 
     /// Period of the pattern.
