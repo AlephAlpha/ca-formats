@@ -13,4 +13,4 @@ keywords = ["game-of-life", "cellular-automata", "parser"]
 [dependencies]
 lazy_static = "1.4.0"
 regex = "1.4.2"
-thiserror = "1.0.22"
+thiserror = "1.0.23"
