@@ -6,8 +6,8 @@ use std::{
 
 /// Types that can be passed to parsers as input.
 ///
-/// The trait is implemented for `&str` and `BufReader`.
-/// When parsing a file, you can take a `BufReader<File>` as input.
+/// The trait is implemented for [`&str`](str) and [`BufReader`].
+/// When parsing a file, you can take a [`BufReader<File>`] as input.
 pub trait Input {
     /// An iterator over lines of the input.
     type Lines: Iterator;

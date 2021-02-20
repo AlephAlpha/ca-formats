@@ -1,4 +1,4 @@
-//! A parser for [Macrocell](http://golly.sourceforge.net/Help/formats.html#rle) format.
+//! A parser for [Macrocell](http://golly.sourceforge.net/Help/formats.html#mc) format.
 
 use crate::Input;
 use lazy_static::lazy_static;
@@ -6,7 +6,7 @@ use regex::Regex;
 use std::io::{BufReader, Error as IoError, Read};
 use thiserror::Error;
 
-/// Errors that can be returned when parsing a RLE file.
+/// Errors that can be returned when parsing a Macrocell file.
 #[derive(Debug, Error)]
 pub enum Error {
     #[error("Invalid header line: {0}.")]
@@ -15,6 +15,12 @@ pub enum Error {
     InvalidNodeLine(String),
     #[error("Error when reading from input: {0}.")]
     IoError(IoError),
+}
+
+impl From<IoError> for Error {
+    fn from(error: IoError) -> Self {
+        Error::IoError(error)
+    }
 }
 
 /// A node in [HashLife](https://conwaylife.com/wiki/HashLife)'s quadtree.
@@ -136,7 +142,7 @@ fn parse_gen(line: &str) -> Option<u64> {
     Some(gen)
 }
 
-/// A parser for [Macrocell](http://golly.sourceforge.net/Help/formats.html#rle) format.
+/// A parser for [Macrocell](http://golly.sourceforge.net/Help/formats.html#mc) format.
 ///
 /// This format is specifically designed for the [HashLife](https://conwaylife.com/wiki/HashLife)
 /// algorithm. So as an iterator, it iterates over the nodes in the quadtree,
@@ -205,7 +211,7 @@ impl<I: Input> Macrocell<I> {
         let mut gen = None;
         let mut current_line = None;
         while let Some(item) = lines.next() {
-            let line = I::line(item).map_err(Error::IoError)?;
+            let line = I::line(item)?;
             if line.as_ref().starts_with("[M2]") {
                 continue;
             } else if line.as_ref().starts_with("#R") {
@@ -244,7 +250,7 @@ impl<I: Input> Macrocell<I> {
 }
 
 impl<R: Read> Macrocell<BufReader<R>> {
-    /// Creates a new parser instance from something that implements `Read` trait, e.g., a `File`.
+    /// Creates a new parser instance from something that implements [`Read`] trait, e.g., a [`File`](std::fs::File).
     pub fn new_from_file(file: R) -> Result<Self, Error> {
         Self::new(BufReader::new(file))
     }
@@ -314,6 +320,7 @@ impl<I: Input> Iterator for Macrocell<I> {
     }
 }
 
+#[allow(clippy::unusual_byte_groupings)]
 #[cfg(test)]
 mod tests {
     use super::*;

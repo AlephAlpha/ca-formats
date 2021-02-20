@@ -13,6 +13,12 @@ pub enum Error {
     IoError(IoError),
 }
 
+impl From<IoError> for Error {
+    fn from(error: IoError) -> Self {
+        Error::IoError(error)
+    }
+}
+
 /// A parser for [Plaintext](https://www.conwaylife.com/wiki/Plaintext) format.
 ///
 /// As an iterator, it iterates over the living cells.
@@ -65,7 +71,7 @@ impl<I: Input> Plaintext<I> {
         let mut lines = input.lines();
         let mut current_line = None;
         while let Some(item) = lines.next() {
-            let line = I::line(item).map_err(Error::IoError)?;
+            let line = I::line(item)?;
             if !line.as_ref().starts_with('!') {
                 current_line = Some(I::bytes(line));
                 break;
@@ -80,7 +86,7 @@ impl<I: Input> Plaintext<I> {
 }
 
 impl<R: Read> Plaintext<BufReader<R>> {
-    /// Creates a new parser instance from something that implements `Read` trait, e.g., a `File`.
+    /// Creates a new parser instance from something that implements [`Read`] trait, e.g., a [`File`](std::fs::File).
     pub fn new_from_file(file: R) -> Result<Self, Error> {
         Self::new(BufReader::new(file))
     }

@@ -5,7 +5,7 @@ use crate::Coordinates;
 use std::str::Bytes;
 use thiserror::Error;
 
-/// Errors that can be returned when parsing a Plaintext file.
+/// Errors that can be returned when parsing a apgcode string.
 #[derive(Clone, Debug, Eq, Error, PartialEq)]
 pub enum Error {
     #[error("Unexpected character: {0}.")]
@@ -126,8 +126,11 @@ impl<'a> Iterator for Wechsler<'a> {
 /// Type of a pattern.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
 pub enum PatternType {
+    /// [Still life](https://conwaylife.com/wiki/Still_life).
     StillLife,
+    /// [Oscillator](https://conwaylife.com/wiki/Oscillator).
     Oscillator,
+    /// [Spaceship](https://conwaylife.com/wiki/Spaceship).
     Spaceship,
 }
 

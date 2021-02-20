@@ -22,6 +22,12 @@ pub enum Error {
     IoError(IoError),
 }
 
+impl From<IoError> for Error {
+    fn from(error: IoError) -> Self {
+        Error::IoError(error)
+    }
+}
+
 /// Data from the `#CXRLE` line, e.g., `#CXRLE Pos=0,-1377 Gen=3480106827776`.
 #[derive(Clone, Debug, Eq, PartialEq, Default, Hash)]
 pub struct CxrleData {
@@ -166,7 +172,7 @@ impl<I: Input> Rle<I> {
         let mut position = (0, 0);
         let mut x_start = 0;
         while let Some(item) = lines.next() {
-            let line = I::line(item).map_err(Error::IoError)?;
+            let line = I::line(item)?;
             if line.as_ref().starts_with("#CXRLE") {
                 cxrle_data.replace(
                     parse_cxrle(line.as_ref())
@@ -212,7 +218,7 @@ impl<I: Input> Rle<I> {
 }
 
 impl<R: Read> Rle<BufReader<R>> {
-    /// Creates a new parser instance from something that implements `Read` trait, e.g., a `File`.
+    /// Creates a new parser instance from something that implements [`Read`] trait, e.g., a [`File`](std::fs::File).
     pub fn new_from_file(file: R) -> Result<Self, Error> {
         Self::new(BufReader::new(file))
     }
@@ -261,7 +267,7 @@ impl<I: Input> Iterator for Rle<I> {
                     if self.run_count == 0 {
                         self.run_count = 1;
                     }
-                    if self.state_prefix.is_some() && (c < b'A' || c > b'X') {
+                    if self.state_prefix.is_some() && !(b'A'..=b'X').contains(&c) {
                         let mut state_string = char::from(self.state_prefix.unwrap()).to_string();
                         state_string.push(char::from(c));
                         return Some(Err(Error::InvalidState(state_string)));
