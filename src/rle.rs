@@ -15,6 +15,7 @@ pub enum Error {
     #[error("Invalid state: {0}.")]
     InvalidState(String),
     #[error("Invalid \"#CXRLE\" line: {0}.")]
+    #[allow(clippy::upper_case_acronyms)]
     InvalidCXRLELine(String),
     #[error("Invalid header line: {0}.")]
     InvalidHeaderLine(String),
@@ -218,7 +219,8 @@ impl<I: Input> Rle<I> {
 }
 
 impl<R: Read> Rle<BufReader<R>> {
-    /// Creates a new parser instance from something that implements [`Read`] trait, e.g., a [`File`](std::fs::File).
+    /// Creates a new parser instance from something that implements [`Read`] trait,
+    /// e.g., a [`File`](std::fs::File).
     pub fn new_from_file(file: R) -> Result<Self, Error> {
         Self::new(BufReader::new(file))
     }
@@ -315,6 +317,149 @@ impl<I: Input> Iterator for Rle<I> {
                             continue;
                         } else {
                             self.current_line = Some(I::bytes(line));
+                        }
+                    }
+                    Err(e) => {
+                        return Some(Err(Error::IoError(e)));
+                    }
+                }
+            } else {
+                return None;
+            }
+        }
+    }
+}
+
+#[cfg(feature = "unknown")]
+/// A variant of RLE format with an additional symbol `?` that represents
+/// an unknown cell.
+///
+/// Now unknown cells are the background, and dead cells are explicitly
+/// outputed.
+pub struct RleWithUnknown<I: Input>(Rle<I>);
+
+#[cfg(feature = "unknown")]
+impl<I: Input> RleWithUnknown<I> {
+    /// Create a new parser instance from input, and try to read the header and the `#CXRLE` line.
+    ///
+    /// If there are multiple header lines / `CXRLE` lines, only the last one will be taken.
+    pub fn new(input: I) -> Result<Self, Error> {
+        Rle::new(input).map(|rle| rle.with_unknown())
+    }
+
+    /// Data from the `#CXRLE` line.
+    pub fn cxrle_data(&self) -> Option<&CxrleData> {
+        self.0.cxrle_data.as_ref()
+    }
+
+    /// Data from the header line.
+    pub fn header_data(&self) -> Option<&HeaderData> {
+        self.0.header_data.as_ref()
+    }
+}
+
+#[cfg(feature = "unknown")]
+impl<R: Read> RleWithUnknown<BufReader<R>> {
+    /// Creates a new parser instance from something that implements [`Read`] trait,
+    /// e.g., a [`File`](std::fs::File).
+    pub fn new_from_file(file: R) -> Result<Self, Error> {
+        Self::new(BufReader::new(file))
+    }
+}
+
+#[cfg(feature = "unknown")]
+impl<I: Input> Clone for RleWithUnknown<I>
+where
+    I::Lines: Clone,
+    I::Bytes: Clone,
+{
+    fn clone(&self) -> Self {
+        RleWithUnknown(self.0.clone())
+    }
+}
+
+#[cfg(feature = "unknown")]
+impl<I: Input> Rle<I> {
+    /// Parse the file as [`RleWithUnknown`].
+    pub fn with_unknown(self) -> RleWithUnknown<I> {
+        RleWithUnknown(self)
+    }
+}
+
+/// An iterator over known cells in an RLE file with unknown.
+#[cfg(feature = "unknown")]
+impl<I: Input> Iterator for RleWithUnknown<I> {
+    type Item = Result<CellData, Error>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.0.alive_count > 0 {
+            self.0.alive_count -= 1;
+            let cell = CellData {
+                position: self.0.position,
+                state: self.0.state,
+            };
+            self.0.position.0 += 1;
+            return Some(Ok(cell));
+        }
+        loop {
+            if let Some(c) = self.0.current_line.as_mut().and_then(|i| i.next()) {
+                if c.is_ascii_digit() {
+                    self.0.run_count = 10 * self.0.run_count + (c - b'0') as i64
+                } else if !c.is_ascii_whitespace() {
+                    if self.0.run_count == 0 {
+                        self.0.run_count = 1;
+                    }
+                    if self.0.state_prefix.is_some() && !(b'A'..=b'X').contains(&c) {
+                        let mut state_string = char::from(self.0.state_prefix.unwrap()).to_string();
+                        state_string.push(char::from(c));
+                        return Some(Err(Error::InvalidState(state_string)));
+                    }
+                    match c {
+                        b'?' => {
+                            self.0.position.0 += self.0.run_count;
+                            self.0.run_count = 0;
+                        }
+                        b'o' | b'b' | b'.' | b'A'..=b'X' => {
+                            if c == b'b' || c == b'.' {
+                                self.0.state = 0;
+                            } else if c == b'o' {
+                                self.0.state = 1;
+                            } else {
+                                self.0.state =
+                                    24 * (self.0.state_prefix.take().unwrap_or(b'o') - b'o');
+                                self.0.state += c + 1 - b'A';
+                            }
+                            self.0.alive_count = self.0.run_count - 1;
+                            self.0.run_count = 0;
+                            let cell = CellData {
+                                position: self.0.position,
+                                state: self.0.state,
+                            };
+                            self.0.position.0 += 1;
+                            return Some(Ok(cell));
+                        }
+                        b'p'..=b'y' => {
+                            self.0.state_prefix = Some(c);
+                        }
+                        b'$' => {
+                            self.0.position.0 = self.0.x_start;
+                            self.0.position.1 += self.0.run_count;
+                            self.0.run_count = 0;
+                        }
+                        b'!' => return None,
+                        _ => return Some(Err(Error::InvalidState(char::from(c).to_string()))),
+                    }
+                }
+            } else if let Some(item) = self.0.lines.next() {
+                match I::line(item) {
+                    Ok(line) => {
+                        if line.as_ref().starts_with('#')
+                            | line.as_ref().starts_with("x ")
+                            | line.as_ref().starts_with("x=")
+                        {
+                            continue;
+                        } else {
+                            self.0.current_line = Some(I::bytes(line));
                         }
                     }
                     Err(e) => {
@@ -478,35 +623,35 @@ bo$2bo$3o!";
             vec![
                 CellData {
                     position: (0, 0),
-                    state: 1
+                    state: 1,
                 },
                 CellData {
                     position: (1, 0),
-                    state: 1
+                    state: 1,
                 },
                 CellData {
                     position: (2, 0),
-                    state: 1
+                    state: 1,
                 },
                 CellData {
                     position: (0, 1),
-                    state: 2
+                    state: 2,
                 },
                 CellData {
                     position: (1, 1),
-                    state: 1
+                    state: 1,
                 },
                 CellData {
                     position: (2, 1),
-                    state: 1
+                    state: 1,
                 },
                 CellData {
                     position: (1, 2),
-                    state: 3
+                    state: 3,
                 },
                 CellData {
                     position: (2, 2),
-                    state: 4
+                    state: 4,
                 },
             ]
         );
@@ -536,31 +681,101 @@ bo$2bo$3o!";
             vec![
                 CellData {
                     position: (1, 0),
-                    state: 1
+                    state: 1,
                 },
                 CellData {
                     position: (2, 0),
-                    state: 200
+                    state: 200,
                 },
                 CellData {
                     position: (0, 1),
-                    state: 177
+                    state: 177,
                 },
                 CellData {
                     position: (1, 1),
-                    state: 230
+                    state: 230,
                 },
                 CellData {
                     position: (2, 1),
-                    state: 89
+                    state: 89,
                 },
                 CellData {
                     position: (0, 2),
-                    state: 45
+                    state: 45,
                 },
                 CellData {
                     position: (1, 2),
-                    state: 45
+                    state: 45,
+                },
+            ]
+        );
+        Ok(())
+    }
+
+    #[test]
+    #[cfg(feature = "unknown")]
+    fn rle_glider_with_unknown() -> Result<(), Error> {
+        const GLIDER: &str = r"#CXRLE Pos=-1,-1
+x = 3, y = 3, rule = B3/S23
+5?$?bob?$?2bo?$?3o?$5?!";
+
+        let glider = RleWithUnknown::new(GLIDER)?;
+
+        assert_eq!(
+            glider.cxrle_data(),
+            Some(&CxrleData {
+                pos: Some((-1, -1)),
+                gen: None
+            })
+        );
+        assert_eq!(
+            glider.header_data(),
+            Some(&HeaderData {
+                x: 3,
+                y: 3,
+                rule: Some(String::from("B3/S23"))
+            })
+        );
+
+        let cells = glider.collect::<Result<Vec<_>, _>>()?;
+        assert_eq!(
+            cells,
+            vec![
+                CellData {
+                    position: (0, 0),
+                    state: 0,
+                },
+                CellData {
+                    position: (1, 0),
+                    state: 1,
+                },
+                CellData {
+                    position: (2, 0),
+                    state: 0,
+                },
+                CellData {
+                    position: (0, 1),
+                    state: 0,
+                },
+                CellData {
+                    position: (1, 1),
+                    state: 0,
+                },
+                CellData {
+                    position: (2, 1),
+                    state: 1,
+                },
+                CellData {
+                    position: (0, 2),
+                    state: 1,
+                },
+                CellData {
+                    position: (1, 2),
+                    state: 1,
+                },
+                CellData {
+                    position: (2, 2),
+                    state: 1,
                 },
             ]
         );
