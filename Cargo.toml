@@ -1,6 +1,6 @@
 [package]
 name = "ca-formats"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["AlephAlpha <alephalpha911@gmail.com>"]
 edition = "2018"
 description = "Parsing pattern files for Conway's Game of Life."
