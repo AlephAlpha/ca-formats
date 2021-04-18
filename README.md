@@ -46,6 +46,12 @@ let sirrobin = Rle::new_from_file(file).unwrap();
 assert_eq!(sirrobin.count(), 282);
 ```
 
+## 未知的细胞
+
+当启用 `unknown` feature 时，`Rle` 类型会提供一个名为 `with_unknown` 的方法，用来切换到 RLE 的一个特别的变种：这种 RLE 多了一个符号 `?`，用来表示未知的细胞。此时图样的背景是未知的细胞，每行末尾的死细胞不可省略，生成的 Iterator 也会输出每一个死细胞。
+
+只有 RLE 格式支持此功能。
+
 ## 另见
 
 - [ca-rules](https://github.com/AlephAlpha/ca-rules) - 读取元胞自动机的规则。

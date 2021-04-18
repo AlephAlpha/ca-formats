@@ -48,6 +48,12 @@ let sirrobin = Rle::new_from_file(file).unwrap();
 assert_eq!(sirrobin.count(), 282);
 ```
 
+## Unknown cells
+
+When the `unknown` feature is enabled. the `Rle` type will provide an extra method `with_unknown`, which turns the RLE into a special variant of RLE format. In this variant there is another symbol, `?`, which represents unknown cells. Now unknown cells are the background. Dead cells at the end of each line must not be omitted. The iterator will also explicitly output the dead cells.
+
+This is only supported for RLE.
+
 ## See also
 
 - [ca-rules](https://crates.io/crates/ca-rules) - A parser for rule strings.

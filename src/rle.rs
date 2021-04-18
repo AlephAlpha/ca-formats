@@ -225,8 +225,8 @@ impl<I: Input> Rle<I> {
     ///
     /// In this variant of RLE format, there is another symbol, `?`,
     /// which represents unknown cells. Now unknown cells are the background.
-    /// Dead cells should be explicitly denoted, and will be explicitly
-    /// outputed in the iterator.
+    /// Dead cells at the end of each line must not be omitted.
+    /// The iterator will also explicitly output the dead cells.
     #[cfg(feature = "unknown")]
     pub fn with_unknown(mut self) -> Self {
         self.unknown = true;
