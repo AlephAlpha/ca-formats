@@ -240,7 +240,7 @@ where
     I: Input<Lines = L>,
     L: Input,
 {
-    /// A new RLE from the remaining unparsed lines.
+    /// Parse the remaining unparsed lines as a new RLE.
     pub fn remains(self) -> Result<Rle<L>, Error> {
         Rle::new(self.lines)
     }
@@ -642,11 +642,11 @@ bob$2bo$3o!
 x = 3, y = 3, rule = B3/S23
 bob$2bo$3o!";
 
-        let mut glider = Rle::new(GLIDER)?;
+        let mut first_rle = Rle::new(GLIDER)?;
 
-        assert_eq!(glider.cxrle_data, None);
+        assert_eq!(first_rle.cxrle_data, None);
         assert_eq!(
-            glider.header_data,
+            first_rle.header_data,
             Some(HeaderData {
                 x: 3,
                 y: 3,
@@ -655,18 +655,20 @@ bob$2bo$3o!";
         );
 
         let mut cells = Vec::new();
-        while let Some(c) = glider.next() {
+        for c in &mut first_rle {
             cells.push(c?.position);
         }
         assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
 
-        let second_glider = glider.remains()?;
+        let mut second_rle = first_rle.remains()?;
         cells.clear();
 
-        for c in second_glider {
+        for c in &mut second_rle {
             cells.push(c?.position);
         }
-        assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
+
+        let third_rle = second_rle.remains()?;
+        assert_eq!(third_rle.count(), 0);
         Ok(())
     }
 

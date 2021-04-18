@@ -85,6 +85,17 @@ impl<I: Input> Plaintext<I> {
     }
 }
 
+impl<I, L> Plaintext<I>
+where
+    I: Input<Lines = L>,
+    L: Input,
+{
+    /// Parse the remaining unparsed lines as a new Plaintext.
+    pub fn remains(self) -> Result<Plaintext<L>, Error> {
+        Plaintext::new(self.lines)
+    }
+}
+
 impl<R: Read> Plaintext<BufReader<R>> {
     /// Creates a new parser instance from something that implements [`Read`] trait, e.g., a [`File`](std::fs::File).
     pub fn new_from_file(file: R) -> Result<Self, Error> {

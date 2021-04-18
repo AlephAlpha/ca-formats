@@ -249,6 +249,17 @@ impl<I: Input> Macrocell<I> {
     }
 }
 
+impl<I, L> Macrocell<I>
+where
+    I: Input<Lines = L>,
+    L: Input,
+{
+    /// Parse the remaining unparsed lines as a new Macrocell.
+    pub fn remains(self) -> Result<Macrocell<L>, Error> {
+        Macrocell::new(self.lines)
+    }
+}
+
 impl<R: Read> Macrocell<BufReader<R>> {
     /// Creates a new parser instance from something that implements [`Read`] trait, e.g., a [`File`](std::fs::File).
     pub fn new_from_file(file: R) -> Result<Self, Error> {
