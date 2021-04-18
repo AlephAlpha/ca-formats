@@ -44,6 +44,24 @@ impl<'a> Input for &'a str {
     }
 }
 
+impl<'a> Input for Lines<'a> {
+    type Lines = Lines<'a>;
+    type Line = &'a str;
+    type Bytes = Bytes<'a>;
+
+    fn lines(self) -> Self::Lines {
+        self
+    }
+
+    fn line(item: <Self::Lines as Iterator>::Item) -> Result<Self::Line, Error> {
+        Ok(item)
+    }
+
+    fn bytes(line: Self::Line) -> Self::Bytes {
+        line.bytes()
+    }
+}
+
 impl<R: Read> Input for BufReader<R> {
     type Lines = IoLines<BufReader<R>>;
     type Line = String;
@@ -51,6 +69,24 @@ impl<R: Read> Input for BufReader<R> {
 
     fn lines(self) -> Self::Lines {
         BufRead::lines(self)
+    }
+
+    fn line(item: <Self::Lines as Iterator>::Item) -> Result<Self::Line, Error> {
+        item
+    }
+
+    fn bytes(line: Self::Line) -> Self::Bytes {
+        line.into_bytes().into_iter()
+    }
+}
+
+impl<B: BufRead> Input for IoLines<B> {
+    type Lines = IoLines<B>;
+    type Line = String;
+    type Bytes = IntoIter<u8>;
+
+    fn lines(self) -> Self::Lines {
+        self
     }
 
     fn line(item: <Self::Lines as Iterator>::Item) -> Result<Self::Line, Error> {

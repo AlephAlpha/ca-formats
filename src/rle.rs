@@ -15,8 +15,7 @@ pub enum Error {
     #[error("Invalid state: {0}.")]
     InvalidState(String),
     #[error("Invalid \"#CXRLE\" line: {0}.")]
-    #[allow(clippy::upper_case_acronyms)]
-    InvalidCXRLELine(String),
+    InvalidCxrleLine(String),
     #[error("Invalid header line: {0}.")]
     InvalidHeaderLine(String),
     #[error("Error when reading from input: {0}.")]
@@ -181,7 +180,7 @@ impl<I: Input> Rle<I> {
             if line.as_ref().starts_with("#CXRLE") {
                 cxrle_data.replace(
                     parse_cxrle(line.as_ref())
-                        .ok_or_else(|| Error::InvalidCXRLELine(line.as_ref().to_string()))?,
+                        .ok_or_else(|| Error::InvalidCxrleLine(line.as_ref().to_string()))?,
                 );
             } else if line.as_ref().starts_with("x ") || line.as_ref().starts_with("x=") {
                 header_data.replace(
@@ -233,6 +232,17 @@ impl<I: Input> Rle<I> {
     pub fn with_unknown(mut self) -> Self {
         self.unknown = true;
         self
+    }
+}
+
+impl<I, L> Rle<I>
+where
+    I: Input<Lines = L>,
+    L: Input,
+{
+    /// A new RLE from the remaining unparsed lines.
+    pub fn remains(self) -> Result<Rle<L>, Error> {
+        Rle::new(self.lines)
     }
 }
 
@@ -348,7 +358,10 @@ impl<I: Input> Iterator for Rle<I> {
                             self.position.1 += self.run_count;
                             self.run_count = 0;
                         }
-                        b'!' => return None,
+                        b'!' => {
+                            self.current_line = None;
+                            return None;
+                        }
                         _ => return Some(Err(Error::InvalidState(char::from(c).to_string()))),
                     }
                 }
@@ -611,6 +624,49 @@ bo$2bo$3o!";
                 },
             ]
         );
+        Ok(())
+    }
+
+    #[test]
+    fn rle_two_rles() -> Result<(), Error> {
+        const GLIDER: &str = r"#N Glider
+#O Richard K. Guy
+#C The smallest, most common, and first discovered spaceship. Diagonal, has period 4 and speed c/4.
+#C www.conwaylife.com/wiki/index.php?title=Glider
+x = 3, y = 3, rule = B3/S23
+bob$2bo$3o!
+#N Glider
+#O Richard K. Guy
+#C The smallest, most common, and first discovered spaceship. Diagonal, has period 4 and speed c/4.
+#C www.conwaylife.com/wiki/index.php?title=Glider
+x = 3, y = 3, rule = B3/S23
+bob$2bo$3o!";
+
+        let mut glider = Rle::new(GLIDER)?;
+
+        assert_eq!(glider.cxrle_data, None);
+        assert_eq!(
+            glider.header_data,
+            Some(HeaderData {
+                x: 3,
+                y: 3,
+                rule: Some(String::from("B3/S23"))
+            })
+        );
+
+        let mut cells = Vec::new();
+        while let Some(c) = glider.next() {
+            cells.push(c?.position);
+        }
+        assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
+
+        let second_glider = glider.remains()?;
+        cells.clear();
+
+        for c in second_glider {
+            cells.push(c?.position);
+        }
+        assert_eq!(cells, vec![(1, 0), (2, 1), (0, 2), (1, 2), (2, 2)]);
         Ok(())
     }
 
