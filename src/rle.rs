@@ -243,6 +243,19 @@ where
     pub fn remains(self) -> Result<Rle<L>, Error> {
         Rle::new(self.lines)
     }
+
+    /// Try to arse the remaining unparsed lines as a new RLE.
+    ///
+    /// Returns `Ok(None)` if the remaining lines is empty or only
+    /// contains header lines and comments.
+    pub fn try_remains(self) -> Result<Option<Rle<L>>, Error> {
+        let rle = Rle::new(self.lines)?;
+        Ok(if rle.current_line.is_some() {
+            Some(rle)
+        } else {
+            None
+        })
+    }
 }
 
 impl<R: Read> Rle<BufReader<R>> {
@@ -666,8 +679,8 @@ bob$2bo$3o!";
             cells.push(c?.position);
         }
 
-        let third_rle = second_rle.remains()?;
-        assert_eq!(third_rle.count(), 0);
+        let third_rle = second_rle.try_remains()?;
+        assert!(third_rle.is_none());
         Ok(())
     }
 
