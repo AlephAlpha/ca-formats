@@ -1,8 +1,7 @@
 //! A parser for [Macrocell](http://golly.sourceforge.net/Help/formats.html#mc) format.
 
 use crate::Input;
-use once_cell::sync::Lazy;
-use regex::Regex;
+use lazy_regex::regex;
 use std::io::{BufReader, Error as IoError, Read};
 use thiserror::Error;
 
@@ -91,9 +90,8 @@ fn parse_level3(line: &str) -> Option<NodeData> {
 
 /// Parse a level 1 leaf.
 fn parse_level1(line: &str) -> Option<NodeData> {
-    static RE: Lazy<Regex> =
-        Lazy::new(|| Regex::new(r"^1\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)").unwrap());
-    let cap = RE.captures(line)?;
+    let re = regex!(r"^1\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)");
+    let cap = re.captures(line)?;
     let nw = cap[1].parse().ok()?;
     let ne = cap[2].parse().ok()?;
     let sw = cap[3].parse().ok()?;
@@ -103,9 +101,8 @@ fn parse_level1(line: &str) -> Option<NodeData> {
 
 /// Parse a non-leaf node.
 fn parse_node(line: &str) -> Option<NodeData> {
-    static RE: Lazy<Regex> =
-        Lazy::new(|| Regex::new(r"^(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)").unwrap());
-    let cap = RE.captures(line)?;
+    let re = regex!(r"^(\d+)\s+(\d+)\s+(\d+)\s+(\d+)\s+(\d+)");
+    let cap = re.captures(line)?;
     let level = cap[1].parse().ok()?;
     let nw = cap[2].parse().ok()?;
     let ne = cap[3].parse().ok()?;
@@ -122,16 +119,16 @@ fn parse_node(line: &str) -> Option<NodeData> {
 
 /// Parse the rulestring.
 fn parse_rule(line: &str) -> Option<String> {
-    static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^#R\s*(?P<rule>.*\S)\s*$").unwrap());
-    let cap = RE.captures(line)?;
+    let re = regex!(r"^#R\s*(?P<rule>.*\S)\s*$");
+    let cap = re.captures(line)?;
     let rule = cap["rule"].to_string();
     Some(rule)
 }
 
 /// Parse the current generation.
 fn parse_gen(line: &str) -> Option<u64> {
-    static RE: Lazy<Regex> = Lazy::new(|| Regex::new(r"^#G\s*(?P<gen>\d+)\s*$").unwrap());
-    let cap = RE.captures(line)?;
+    let re = regex!(r"^#G\s*(?P<gen>\d+)\s*$");
+    let cap = re.captures(line)?;
     let gen = cap["gen"].parse().ok()?;
     Some(gen)
 }

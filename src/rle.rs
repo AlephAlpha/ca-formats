@@ -4,8 +4,7 @@
 //! format, except that it supports up to 256 states, and a `#CXRLE` line.
 
 use crate::{CellData, Coordinates, Input};
-use once_cell::sync::Lazy;
-use regex::Regex;
+use lazy_regex::*;
 use std::io::{BufReader, Error as IoError, Read};
 use thiserror::Error;
 
@@ -39,12 +38,9 @@ pub struct CxrleData {
 
 /// Parse the `#CXRLE` line.
 fn parse_cxrle(line: &str) -> Option<CxrleData> {
-    static RE: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(r"(?:Pos\s*=\s*(?P<x>-?\d+),\s*(?P<y>-?\d+))|(?:Gen\s*=\s*(?P<gen>\d+))")
-            .unwrap()
-    });
+    let re = regex!(r"(?:Pos\s*=\s*(?P<x>-?\d+),\s*(?P<y>-?\d+))|(?:Gen\s*=\s*(?P<gen>\d+))");
     let mut data = CxrleData::default();
-    for cap in RE.captures_iter(line) {
+    for cap in re.captures_iter(line) {
         if let Some(gen) = cap.name("gen") {
             data.gen = Some(gen.as_str().parse().ok())?;
         } else {
@@ -69,14 +65,10 @@ pub struct HeaderData {
 
 /// Parse the header line.
 fn parse_header(line: &str) -> Option<HeaderData> {
-    static RE: Lazy<Regex> = Lazy::new(|| {
-        Regex::new(
-            r"^x\s*=\s*(?P<x>\d+),\s*y\s*=\s*(?P<y>\d+)(?:,\s*rule\s*=\s*(?P<rule>.*\S)\s*)?$",
-        )
-        .unwrap()
-    });
+    let re =
+        regex!(r"^x\s*=\s*(?P<x>\d+),\s*y\s*=\s*(?P<y>\d+)(?:,\s*rule\s*=\s*(?P<rule>.*\S)\s*)?$");
     let mut data = HeaderData::default();
-    let cap = RE.captures(line)?;
+    let cap = re.captures(line)?;
     data.x = cap["x"].parse().ok()?;
     data.y = cap["y"].parse().ok()?;
     if let Some(rule) = cap.name("rule") {
