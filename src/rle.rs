@@ -236,7 +236,7 @@ where
         Rle::new(self.lines)
     }
 
-    /// Try to arse the remaining unparsed lines as a new RLE.
+    /// Try to parse the remaining unparsed lines as a new RLE.
     ///
     /// Returns `Ok(None)` if the remaining lines is empty or only
     /// contains header lines and comments.
