@@ -4,7 +4,7 @@
 //! format, except that it supports up to 256 states, and a `#CXRLE` line.
 
 use crate::{CellData, Coordinates, Input};
-use lazy_regex::*;
+use lazy_regex::regex;
 use std::io::{BufReader, Error as IoError, Read};
 use thiserror::Error;
 
@@ -18,13 +18,7 @@ pub enum Error {
     #[error("Invalid header line: {0}.")]
     InvalidHeaderLine(String),
     #[error("Error when reading from input: {0}.")]
-    IoError(IoError),
-}
-
-impl From<IoError> for Error {
-    fn from(error: IoError) -> Self {
-        Error::IoError(error)
-    }
+    IoError(#[from] IoError),
 }
 
 /// Data from the `#CXRLE` line, e.g., `#CXRLE Pos=0,-1377 Gen=3480106827776`.
@@ -118,6 +112,7 @@ fn parse_header(line: &str) -> Option<HeaderData> {
 ///
 /// assert_eq!(sirrobin.count(), 282);
 /// ```
+#[must_use]
 #[derive(Debug)]
 pub struct Rle<I: Input> {
     /// Data from the `#CXRLE` line.
@@ -187,7 +182,7 @@ impl<I: Input> Rle<I> {
             position = pos;
             x_start = pos.0;
         }
-        Ok(Rle {
+        Ok(Self {
             cxrle_data,
             header_data,
             lines,
@@ -264,7 +259,7 @@ where
     I::Bytes: Clone,
 {
     fn clone(&self) -> Self {
-        Rle {
+        Self {
             cxrle_data: self.cxrle_data.clone(),
             header_data: self.header_data.clone(),
             lines: self.lines.clone(),
@@ -296,7 +291,7 @@ impl<I: Input> Iterator for Rle<I> {
             return Some(Ok(cell));
         }
         loop {
-            if let Some(c) = self.current_line.as_mut().and_then(|i| i.next()) {
+            if let Some(c) = self.current_line.as_mut().and_then(Iterator::next) {
                 if c.is_ascii_digit() {
                     self.run_count = 10 * self.run_count + (c - b'0') as i64
                 } else if !c.is_ascii_whitespace() {

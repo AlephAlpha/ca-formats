@@ -10,13 +10,7 @@ pub enum Error {
     #[error("Unexpected character: {0}.")]
     UnexpectedChar(char),
     #[error("Error when reading from input: {0}.")]
-    IoError(IoError),
-}
-
-impl From<IoError> for Error {
-    fn from(error: IoError) -> Self {
-        Error::IoError(error)
-    }
+    IoError(#[from] IoError),
 }
 
 /// A parser for [Plaintext](https://www.conwaylife.com/wiki/Plaintext) format.
@@ -53,6 +47,7 @@ impl From<IoError> for Error {
 ///
 /// assert_eq!(sirrobin.count(), 282);
 /// ```
+#[must_use]
 #[derive(Debug)]
 pub struct Plaintext<I: Input> {
     /// An iterator over lines of a Plaintext file.
@@ -77,7 +72,7 @@ impl<I: Input> Plaintext<I> {
                 break;
             }
         }
-        Ok(Plaintext {
+        Ok(Self {
             lines,
             current_line,
             position: (0, 0),
@@ -109,7 +104,7 @@ where
     I::Bytes: Clone,
 {
     fn clone(&self) -> Self {
-        Plaintext {
+        Self {
             lines: self.lines.clone(),
             current_line: self.current_line.clone(),
             position: self.position,
@@ -123,7 +118,7 @@ impl<I: Input> Iterator for Plaintext<I> {
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            if let Some(c) = self.current_line.as_mut().and_then(|i| i.next()) {
+            if let Some(c) = self.current_line.as_mut().and_then(Iterator::next) {
                 match c {
                     b'O' | b'*' => {
                         let cell = self.position;

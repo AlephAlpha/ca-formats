@@ -13,13 +13,7 @@ pub enum Error {
     #[error("Invalid node line: {0}.")]
     InvalidNodeLine(String),
     #[error("Error when reading from input: {0}.")]
-    IoError(IoError),
-}
-
-impl From<IoError> for Error {
-    fn from(error: IoError) -> Self {
-        Error::IoError(error)
-    }
+    IoError(#[from] IoError),
 }
 
 /// A node in [HashLife](https://conwaylife.com/wiki/HashLife)'s quadtree.
@@ -54,7 +48,7 @@ pub enum NodeData {
 }
 
 impl NodeData {
-    pub fn level(&self) -> u8 {
+    pub const fn level(&self) -> u8 {
         match self {
             NodeData::Level1 { .. } => 1,
             NodeData::Level3(_) => 3,
@@ -180,6 +174,7 @@ fn parse_gen(line: &str) -> Option<u64> {
 /// let sirrobin = Macrocell::new_from_file(file).unwrap();
 ///
 /// assert_eq!(sirrobin.count(), 42); // The number of nodes.
+#[must_use]
 #[derive(Debug)]
 pub struct Macrocell<I: Input> {
     /// Rulestring.
@@ -220,7 +215,7 @@ impl<I: Input> Macrocell<I> {
                 break;
             }
         }
-        Ok(Macrocell {
+        Ok(Self {
             rule,
             gen,
             lines,
@@ -264,7 +259,7 @@ where
     I::Line: Clone,
 {
     fn clone(&self) -> Self {
-        Macrocell {
+        Self {
             rule: self.rule.clone(),
             gen: self.gen,
             lines: self.lines.clone(),

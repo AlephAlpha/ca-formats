@@ -6,7 +6,9 @@ use std::{
 
 /// Types that can be passed to parsers as input.
 ///
-/// The trait is implemented for `&str`, `&[u8]` and [`BufReader`].
+/// The trait is implemented for `&str`, `&[u8]`, [`BufReader`],
+/// and `&mut B` for every type `B` that implements [`BufRead`].
+///
 /// When parsing a file, you can take a [`BufReader<File>`] as input.
 pub trait Input {
     /// An iterator over lines of the input.
@@ -45,7 +47,7 @@ impl<'a> Input for &'a str {
 }
 
 impl<'a> Input for Lines<'a> {
-    type Lines = Lines<'a>;
+    type Lines = Self;
     type Line = &'a str;
     type Bytes = Bytes<'a>;
 
@@ -63,7 +65,7 @@ impl<'a> Input for Lines<'a> {
 }
 
 impl<'a> Input for &'a [u8] {
-    type Lines = IoLines<&'a [u8]>;
+    type Lines = IoLines<Self>;
     type Line = String;
     type Bytes = IntoIter<u8>;
 
@@ -81,7 +83,7 @@ impl<'a> Input for &'a [u8] {
 }
 
 impl<R: Read> Input for BufReader<R> {
-    type Lines = IoLines<BufReader<R>>;
+    type Lines = IoLines<Self>;
     type Line = String;
     type Bytes = IntoIter<u8>;
 
@@ -99,7 +101,7 @@ impl<R: Read> Input for BufReader<R> {
 }
 
 impl<'a, B: BufRead> Input for &'a mut B {
-    type Lines = IoLines<&'a mut B>;
+    type Lines = IoLines<Self>;
     type Line = String;
     type Bytes = IntoIter<u8>;
 
@@ -117,7 +119,7 @@ impl<'a, B: BufRead> Input for &'a mut B {
 }
 
 impl<B: BufRead> Input for IoLines<B> {
-    type Lines = IoLines<B>;
+    type Lines = Self;
     type Line = String;
     type Bytes = IntoIter<u8>;
 

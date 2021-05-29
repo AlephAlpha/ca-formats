@@ -80,6 +80,6 @@ pub struct CellData {
 /// Convert the coordinates into a [`CellData`] with state `1`.
 impl From<Coordinates> for CellData {
     fn from(position: Coordinates) -> Self {
-        CellData { position, state: 1 }
+        Self { position, state: 1 }
     }
 }

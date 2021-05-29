@@ -35,6 +35,7 @@ pub enum Error {
 /// let cells = glider.map(|cell| cell.unwrap()).collect::<Vec<_>>();
 /// assert_eq!(cells, vec![(0, 0), (1, 0), (1, 2), (2, 0), (2, 1)]);
 /// ```
+#[must_use]
 #[derive(Clone, Debug)]
 pub struct Wechsler<'a> {
     /// An iterator over bytes of the string.
@@ -158,6 +159,7 @@ pub enum PatternType {
 /// let cells = glider.map(|cell| cell.unwrap()).collect::<Vec<_>>();
 /// assert_eq!(cells, vec![(0, 0), (1, 0), (1, 2), (2, 0), (2, 1)]);
 /// ```
+#[must_use]
 #[derive(Clone, Debug)]
 pub struct ApgCode<'a> {
     pattern_type: PatternType,
@@ -179,10 +181,11 @@ impl<'a> ApgCode<'a> {
             "xq" => PatternType::Spaceship,
             _ => return Err(Error::Unencodable),
         };
-        let mut period: u64 = prefix[2..].parse().map_err(|_| Error::Unencodable)?;
-        if pattern_type == PatternType::StillLife {
-            period = 1;
-        }
+        let period = if pattern_type == PatternType::StillLife {
+            1
+        } else {
+            prefix[2..].parse().map_err(|_| Error::Unencodable)?
+        };
         let wechsler_string = split.next().ok_or(Error::Unencodable)?;
         let wechsler = Wechsler::new(wechsler_string);
         Ok(ApgCode {
@@ -193,12 +196,12 @@ impl<'a> ApgCode<'a> {
     }
 
     /// Period of the pattern.
-    pub fn period(&self) -> u64 {
+    pub const fn period(&self) -> u64 {
         self.period
     }
 
     /// Type of the pattern.
-    pub fn pattern_type(&self) -> PatternType {
+    pub const fn pattern_type(&self) -> PatternType {
         self.pattern_type
     }
 }

@@ -1,14 +1,14 @@
 [package]
-name = "ca-formats"
-version = "0.3.1"
 authors = ["AlephAlpha <alephalpha911@gmail.com>"]
-edition = "2018"
 description = "Parsing pattern files for Conway's Game of Life."
+edition = "2018"
 homepage = "https://github.com/AlephAlpha/ca-formats"
-repository = "https://github.com/AlephAlpha/ca-formats"
-license = "MIT"
-readme = "README_en.md"
 keywords = ["game-of-life", "cellular-automata", "parser"]
+license = "MIT"
+name = "ca-formats"
+readme = "README_en.md"
+repository = "https://github.com/AlephAlpha/ca-formats"
+version = "0.3.1"
 
 [dependencies]
 lazy-regex = "2.0.1"
