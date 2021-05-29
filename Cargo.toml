@@ -8,7 +8,7 @@ license = "MIT"
 name = "ca-formats"
 readme = "README_en.md"
 repository = "https://github.com/AlephAlpha/ca-formats"
-version = "0.3.1"
+version = "0.3.2"
 
 [dependencies]
 lazy-regex = "2.0.1"
@@ -18,3 +18,7 @@ thiserror = "1.0.25"
 [features]
 default = []
 unknown = []
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "doc_cfg"]

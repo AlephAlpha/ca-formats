@@ -54,6 +54,8 @@ assert_eq!(sirrobin.count(), 282);
 
 */
 
+#![cfg_attr(doc_cfg, feature(doc_cfg))]
+
 pub mod apgcode;
 mod input;
 pub mod macrocell;
