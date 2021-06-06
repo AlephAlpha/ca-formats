@@ -215,7 +215,7 @@ impl<I: Input> Rle<I> {
     /// Dead cells at the end of each line must not be omitted.
     /// The iterator will also explicitly output the dead cells.
     #[cfg(feature = "unknown")]
-    #[cfg_attr(doc_cfg, doc(cfg(feature = "unknown")))]
+    #[cfg_attr(docs_rs, doc(cfg(feature = "unknown")))]
     pub fn with_unknown(mut self) -> Self {
         self.unknown = true;
         self

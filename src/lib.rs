@@ -54,7 +54,7 @@ assert_eq!(sirrobin.count(), 282);
 
 */
 
-#![cfg_attr(doc_cfg, feature(doc_cfg))]
+#![cfg_attr(docs_rs, feature(doc_cfg))]
 
 pub mod apgcode;
 mod input;

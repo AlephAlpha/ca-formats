@@ -21,4 +21,4 @@ unknown = []
 
 [package.metadata.docs.rs]
 all-features = true
-rustdoc-args = ["--cfg", "doc_cfg"]
+rustdoc-args = ["--cfg", "docs_rs"]
