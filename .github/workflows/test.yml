@@ -66,6 +66,28 @@ jobs:
           command: test
           args: --all-features
 
+  test-docs:
+    name: Test Generating Docs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install nightly toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: nightly
+          override: true
+
+      - name: Test generating docs
+        uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --all-features
+        env:
+          RUSTDOCFLAGS: --cfg docs_rs --deny warnings
+
   lints:
     name: Lints
     runs-on: ubuntu-latest
