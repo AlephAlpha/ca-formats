@@ -1,18 +1,19 @@
 //! A parser for [Macrocell](http://golly.sourceforge.net/Help/formats.html#mc) format.
 
 use crate::Input;
+use displaydoc::Display;
 use lazy_regex::regex;
 use std::io::{BufReader, Error as IoError, Read};
 use thiserror::Error;
 
 /// Errors that can be returned when parsing a Macrocell file.
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Display)]
 pub enum Error {
-    #[error("Invalid header line: {0}.")]
+    /// Invalid header line: {0}.
     InvalidHeaderLine(String),
-    #[error("Invalid node line: {0}.")]
+    /// Invalid node line: {0}.
     InvalidNodeLine(String),
-    #[error("Error when reading from input: {0}.")]
+    /// Error when reading from input: {0}.
     IoError(#[from] IoError),
 }
 

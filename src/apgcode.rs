@@ -2,15 +2,16 @@
 //! and [Extended Wechsler format](https://www.conwaylife.com/wiki/Apgcode#Extended_Wechsler_Format).
 
 use crate::Coordinates;
+use displaydoc::Display;
 use std::str::Bytes;
 use thiserror::Error;
 
 /// Errors that can be returned when parsing a apgcode string.
-#[derive(Clone, Debug, Eq, Error, PartialEq)]
+#[derive(Clone, Debug, Eq, Error, Display, PartialEq)]
 pub enum Error {
-    #[error("Unexpected character: {0}.")]
+    /// Unexpected character: {0}.
     UnexpectedChar(char),
-    #[error("Pattern not encoded in extended Wechsler format")]
+    /// Pattern not encoded in extended Wechsler format
     Unencodable,
 }
 

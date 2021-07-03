@@ -1,15 +1,16 @@
 //! A parser for [Plaintext](https://www.conwaylife.com/wiki/Plaintext) format.
 
 use crate::{Coordinates, Input};
+use displaydoc::Display;
 use std::io::{BufReader, Error as IoError, Read};
 use thiserror::Error;
 
 /// Errors that can be returned when parsing a Plaintext file.
-#[derive(Debug, Error)]
+#[derive(Debug, Error, Display)]
 pub enum Error {
-    #[error("Unexpected character: {0}.")]
+    /// Unexpected character: {0}.
     UnexpectedChar(char),
-    #[error("Error when reading from input: {0}.")]
+    /// Error when reading from input: {0}.
     IoError(#[from] IoError),
 }
 
