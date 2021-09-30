@@ -197,7 +197,7 @@ impl<I: Input> Macrocell<I> {
         let mut rule = None;
         let mut gen = None;
         let mut current_line = None;
-        while let Some(item) = lines.next() {
+        for item in &mut lines {
             let line = I::line(item)?;
             if line.as_ref().starts_with("[M2]") {
                 continue;

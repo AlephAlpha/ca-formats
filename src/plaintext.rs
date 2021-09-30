@@ -66,7 +66,7 @@ impl<I: Input> Plaintext<I> {
     pub fn new(input: I) -> Result<Self, Error> {
         let mut lines = input.lines();
         let mut current_line = None;
-        while let Some(item) = lines.next() {
+        for item in &mut lines {
             let line = I::line(item)?;
             if !line.as_ref().starts_with('!') {
                 current_line = Some(I::bytes(line));

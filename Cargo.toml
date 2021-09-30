@@ -11,10 +11,10 @@ repository = "https://github.com/AlephAlpha/ca-formats"
 version = "0.3.3"
 
 [dependencies]
-displaydoc = "0.2.1"
+displaydoc = "0.2.3"
 lazy-regex = "2.2.1"
 regex = "1.5.4"
-thiserror = "1.0.26"
+thiserror = "1.0.29"
 
 [features]
 default = []

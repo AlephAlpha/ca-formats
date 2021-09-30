@@ -161,7 +161,7 @@ impl<I: Input> Rle<I> {
         let mut current_line = None;
         let mut position = (0, 0);
         let mut x_start = 0;
-        while let Some(item) = lines.next() {
+        for item in &mut lines {
             let line = I::line(item)?;
             if line.as_ref().starts_with("#CXRLE") {
                 cxrle_data.replace(
