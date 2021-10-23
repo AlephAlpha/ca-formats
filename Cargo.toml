@@ -1,7 +1,7 @@
 [package]
 authors = ["AlephAlpha <alephalpha911@gmail.com>"]
 description = "Parsing pattern files for Conway's Game of Life."
-edition = "2018"
+edition = "2021"
 homepage = "https://github.com/AlephAlpha/ca-formats"
 keywords = ["game-of-life", "cellular-automata", "parser"]
 license = "MIT"
@@ -12,9 +12,9 @@ version = "0.3.3"
 
 [dependencies]
 displaydoc = "0.2.3"
-lazy-regex = "2.2.1"
+lazy-regex = "2.2.2"
 regex = "1.5.4"
-thiserror = "1.0.29"
+thiserror = "1.0.30"
 
 [features]
 default = []
