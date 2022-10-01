@@ -199,12 +199,12 @@ impl<I: Input> Rle<I> {
     }
 
     /// Data from the `#CXRLE` line.
-    pub fn cxrle_data(&self) -> Option<&CxrleData> {
+    pub const fn cxrle_data(&self) -> Option<&CxrleData> {
         self.cxrle_data.as_ref()
     }
 
     /// Data from the header line.
-    pub fn header_data(&self) -> Option<&HeaderData> {
+    pub const fn header_data(&self) -> Option<&HeaderData> {
         self.header_data.as_ref()
     }
 

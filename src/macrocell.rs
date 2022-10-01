@@ -51,9 +51,9 @@ pub enum NodeData {
 impl NodeData {
     pub const fn level(&self) -> u8 {
         match self {
-            NodeData::Level1 { .. } => 1,
-            NodeData::Level3(_) => 3,
-            NodeData::Node { level, .. } => *level,
+            Self::Level1 { .. } => 1,
+            Self::Level3(_) => 3,
+            Self::Node { level, .. } => *level,
         }
     }
 }
@@ -231,7 +231,7 @@ impl<I: Input> Macrocell<I> {
     }
 
     /// The current generation.
-    pub fn gen(&self) -> Option<u64> {
+    pub const fn gen(&self) -> Option<u64> {
         self.gen
     }
 }
