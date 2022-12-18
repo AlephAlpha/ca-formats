@@ -12,9 +12,9 @@ version = "0.3.4"
 
 [dependencies]
 displaydoc = "0.2.3"
-lazy-regex = "2.3.0"
-regex = "1.6.0"
-thiserror = "1.0.35"
+lazy-regex = "2.3.1"
+regex = "1.7.0"
+thiserror = "1.0.37"
 
 [features]
 default = []
