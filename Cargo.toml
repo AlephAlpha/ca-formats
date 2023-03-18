@@ -8,13 +8,13 @@ license = "MIT"
 name = "ca-formats"
 readme = "README_en.md"
 repository = "https://github.com/AlephAlpha/ca-formats"
-version = "0.3.4"
+version = "0.3.5"
 
 [dependencies]
 displaydoc = "0.2.3"
-lazy-regex = "2.3.1"
-regex = "1.7.0"
-thiserror = "1.0.37"
+lazy-regex = "2.5.0"
+regex = "1.7.1"
+thiserror = "1.0.40"
 
 [features]
 default = []
