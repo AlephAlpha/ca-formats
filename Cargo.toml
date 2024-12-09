@@ -14,7 +14,7 @@ version = "0.3.5"
 displaydoc = "0.2.3"
 lazy-regex = "3.0.1"
 regex = "1.7.1"
-thiserror = "1.0.40"
+thiserror = "2.0.6"
 
 [features]
 default = []
